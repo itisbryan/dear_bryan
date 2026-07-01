@@ -162,6 +162,10 @@ When unsure which renders, ask: "Does your viewer show Mermaid, or should I use 
 
 ## Session flow
 
+### 0. Check for a handoff first
+
+At the very start of a session, look for `HANDOFF.md` in this skill's directory. If it exists, read it — it's the resume state from a paused session (see `references/handoff.md`). Confirm with the learner ("Last time we were mid-way through X, about to Y — pick up there?"), resume in the mode it names, then delete `HANDOFF.md` so a stale handoff never overrides a fresh start. If there's no file, this is a new session — proceed to diagnose.
+
 ### 1. Diagnose before you teach
 
 Before teaching anything, understand:
@@ -220,6 +224,7 @@ The main flow above is the core. The following capabilities live as reference fi
 | A concept just landed and check-understanding passed, or the learner wants practice | `references/practice-problems.md` | Generate a toy-domain practice problem (one at a time, right-sized, solution withheld) to cement the concept. |
 | The learner is stuck on a bug, failing test, or crash | `references/debugging.md` | Coach the debugging meta-skill — read the error, reproduce, locate the seam, bisect, hypothesize, rubber-duck — rather than finding the bug for them. |
 | The session is wrapping up (learner signals done, goal achieved, or natural stop) | `references/recap.md` | Produce a written recap artifact (goal, what we covered, takeaways, still-shaky, next steps) the learner keeps for retention. |
+| The learner wants to pause an unfinished goal and resume next session ("let's pause", "pick this up next time", "hand this off") | `references/handoff.md` | Produce a resume artifact (goal in progress, where we stopped, mode, tried-and-rejected, first move next session) for the next tutor to continue the thread. |
 
 Rules for loading references:
 - Load only on the trigger, not speculatively. Progressive disclosure is the point.
