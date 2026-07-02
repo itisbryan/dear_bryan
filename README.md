@@ -14,12 +14,13 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [fetch-issue](./fetch-issue) | Pulls up any GitHub issue by number or URL | `fetch-issue` |
 | [design-taste](./design-taste) | Designs intentional UI and refuses templated/AI-default "slop" | `design-taste` |
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
+| [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
 
 ## Install
 
 ```bash
-# all six into your global skills dir
-npx skills install tutor create-issues create-pr fetch-issue design-taste qa-sweep
+# all seven into your global skills dir
+npx skills install tutor create-issues create-pr fetch-issue design-taste qa-sweep debug
 
 # or clone and point your harness at this directory
 git clone https://github.com/your-org/dear_bryan.git
@@ -90,10 +91,11 @@ dear_bryan/
 ├── design-taste/
 │   ├── SKILL.md
 │   └── references/{catalog,mirror,direction,typography,color,layout,polish,anti-slop}.md
-└── qa-sweep/
-    ├── SKILL.md
-    ├── references/severity.md
-    └── templates/report.md
+├── qa-sweep/
+│   ├── SKILL.md
+│   ├── references/severity.md
+│   └── templates/report.md
+└── debug/SKILL.md
 ```
 
 Each skill is a single `SKILL.md` (plus optional `references/`) — portable across every compliant harness.
