@@ -9,9 +9,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | Skill | What it does | Trigger |
 |:---|:---|:---|
 | [tutor](./tutor) | Coaches you to write your own code — never writes the solution for you | `tutor` |
-| [create-issues](./create-issues) | Structured tickets: Context / Problem / What to decide / References | `create-issues` |
-| [create-pr](./create-pr) | Review-aware PRs; aligns with main and files follow-up issues | `create-pr` |
-| [fetch-issue](./fetch-issue) | Pulls up any GitHub issue by number or URL | `fetch-issue` |
+| [gh-workflow](./gh-workflow) | GitHub issues & PRs via `gh` — subskill collection (create-issues, create-pr, fetch-issue) | `gh-workflow` |
 | [design-taste](./design-taste) | Designs intentional UI and refuses templated/AI-default "slop" | `design-taste` |
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
@@ -21,11 +19,11 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 ## Install
 
 ```bash
-# all nine into your global skills dir
-npx skills install tutor create-issues create-pr fetch-issue design-taste qa-sweep debug tdd rails-work
+# install every skill from the repo into your global skills dir
+npx skills add itisbryan/dear_bryan -s '*' -g -y
 
 # or clone and point your harness at this directory
-git clone https://github.com/your-org/dear_bryan.git
+git clone https://github.com/itisbryan/dear_bryan.git
 ```
 
 In pi, skills in `.agents/skills/` are auto-discovered and register as `/skill:<name>`:
@@ -53,32 +51,23 @@ Three subskills load on demand:
 
 If you explicitly opt out of tutoring, it says so and ships.
 
-## create-issues
+## gh-workflow
 
-Every issue follows one structure so a newcomer can act on it without reading chat history:
+A subskill collection for GitHub via the `gh` CLI. The router loads one on demand:
 
-```
-## Context            the landscape
-## Problem            what's wrong / missing
-## What to decide/do  options + acceptance criteria
-## References         files, links, lines
-```
+- **create-issues** — every issue follows one structure so a newcomer can act on it without reading chat history:
 
-Workflow: gather context → explore the codebase for concrete refs → draft → review → publish via `gh issue create`.
+  ```
+  ## Context            the landscape
+  ## Problem            what's wrong / missing
+  ## What to decide/do  options + acceptance criteria
+  ## References         files, links, lines
+  ```
 
-## create-pr
+- **create-pr** — aligns the branch with latest main, scans the diff for out-of-scope concerns and files them as follow-up issues (via create-issues), then drafts a `## Summary → ## Changes → ## Testing → ## Notes` PR.
+- **fetch-issue** — `gh issue view` with the right flags; a scannable summary that resolves `#<number>` references and offers to pull related issues.
 
-Aligns the branch with latest main, then scans the diff for out-of-scope concerns and files them as separate issues via **create-issues** — keeping the PR focused while capturing the debt.
-
-Body template: `## Summary` → `## Changes` → `## Testing` → `## Notes` (with follow-up issue links).
-
-## fetch-issue
-
-```bash
-gh issue view <id> --json title,body,state,labels,assignees,milestone,comments,url,createdAt,updatedAt
-```
-
-Presents a scannable summary, resolves `#<number>` references, and offers to fetch related issues. Good for grounding a `tutor` lesson or loading context before `create-pr`.
+The three compose: create-pr files follow-ups with create-issues; create-issues can pull an existing ticket with fetch-issue.
 
 ## Layout
 
@@ -87,9 +76,9 @@ dear_bryan/
 ├── tutor/
 │   ├── SKILL.md
 │   └── references/{practice-problems,debugging,recap}.md
-├── create-issues/SKILL.md
-├── create-pr/SKILL.md
-├── fetch-issue/SKILL.md
+├── gh-workflow/
+│   ├── SKILL.md              ← router: GitHub issues & PRs
+│   └── references/{create-issues,create-pr,fetch-issue}.md
 ├── design-taste/
 │   ├── SKILL.md
 │   └── references/{catalog,mirror,clone,direction,typography,color,layout,polish,anti-slop}.md

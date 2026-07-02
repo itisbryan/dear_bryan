@@ -1,11 +1,6 @@
----
-name: create-issues
-description: Creates well-structured issues with a Context, Problem, What to decide/do, References template. Use when asked to create an issue, open a ticket, document a decision, raise a bug, or submit a task for the project issue tracker.
----
+# create-issues (subskill of gh-workflow)
 
-# Create Issues
-
-Creates structured, actionable issues for the project issue tracker. Each issue provides enough context for anyone to understand and act on it without digging through chat history.
+Load this when the user wants to create/open an issue, ticket, bug report, decision, or spike. Creates structured, actionable issues for the project tracker — each self-contained enough that anyone can act on it without digging through chat history.
 
 ## Template
 
@@ -115,7 +110,7 @@ Outcome: pick one strategy and write a one-page ADR documenting the rationale.
 
 ### 1. Gather context
 
-Work from the current conversation. If the user passed an issue reference, fetch its full body and comments. If the user described a bug or task, use that as the source material.
+Work from the current conversation. If the user passed an issue reference, fetch its full body and comments (see the `fetch-issue` subskill). If the user described a bug or task, use that as the source material.
 
 ### 2. Explore the codebase (if needed)
 
@@ -137,7 +132,7 @@ Iterate until the user approves.
 
 ### 5. Publish
 
-Create the issue on the project tracker (e.g. via `gh issue create`). Report the issue URL to the user.
+Create the issue on the project tracker. Report the issue URL to the user.
 
 ```bash
 gh issue create --title "<title>" --body "<body>"

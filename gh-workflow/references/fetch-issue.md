@@ -1,11 +1,6 @@
----
-name: fetch-issue
-description: Fetches a GitHub issue by its number or URL and displays its full details — title, body, state, labels, assignees, and comments. Use when asked to fetch, view, or pull up an issue by ID, number, or link.
----
+# fetch-issue (subskill of gh-workflow)
 
-# Fetch Issue
-
-Retrieves a GitHub issue by its number or URL and displays its complete contents for review.
+Load this when the user wants to fetch, view, or pull up a GitHub issue by number or URL. Retrieves the issue and displays its complete contents for review.
 
 ## Usage
 
@@ -61,9 +56,7 @@ gh issue view <id> --web
 
 ### 1. Determine the issue ID
 
-If the user passes a number (e.g. `#42` or `42`), use it directly. If a URL, pass it as-is to `gh issue view`.
-
-If no ID is given, ask the user which issue to fetch.
+If the user passes a number (e.g. `#42` or `42`), use it directly. If a URL, pass it as-is to `gh issue view`. If no ID is given, ask the user which issue to fetch.
 
 ### 2. Fetch the issue
 

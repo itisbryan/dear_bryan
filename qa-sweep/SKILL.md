@@ -1,6 +1,6 @@
 ---
 name: qa-sweep
-description: Systematic exploratory QA of a running web app — navigate it, exercise the flows, capture evidence, and produce a severity-ranked bug report. Optionally files each finding as a structured issue via create-issues. Use when asked to QA, dogfood, smoke-test, or "find bugs in" a web app, page, or feature before shipping.
+description: Systematic exploratory QA of a running web app — navigate it, exercise the flows, capture evidence, and produce a severity-ranked bug report. Optionally files each finding as a structured issue via gh-workflow. Use when asked to QA, dogfood, smoke-test, or "find bugs in" a web app, page, or feature before shipping.
 ---
 
 # qa-sweep
@@ -67,13 +67,13 @@ Be honest — inflating severity trains the reader to ignore you.
 
 ### 6. File the findings (optional)
 
-Offer to turn findings into tracked issues: "Found 7 issues — want me to file the Critical/High ones?" If yes, hand each to the **create-issues** skill, mapping fields into its Context / Problem / What to decide-do / References format (the reproduction steps become Problem; the screenshot paths and URLs become References). Keep the report as the human-readable summary; issues are the actionable backlog. Skip trivial/Low items unless asked.
+Offer to turn findings into tracked issues: "Found 7 issues — want me to file the Critical/High ones?" If yes, hand each to **gh-workflow** (its `create-issues` subskill), mapping fields into the Context / Problem / What to decide-do / References format (the reproduction steps become Problem; the screenshot paths and URLs become References). Keep the report as the human-readable summary; issues are the actionable backlog. Skip trivial/Low items unless asked.
 
 ## Notes
 
 - **Non-destructive by default.** On a production or shared environment, don't submit real purchases, delete data, or spam signups. Use obvious test data (`qa-sweep test`), and ask before any irreversible action.
 - **Breadth first, then depth.** One good pass over everything beats an exhaustive audit of the landing page. Note areas that need deeper testing rather than blocking on them.
-- Grounding an issue in an existing ticket? Pull it with **fetch-issue** before filing a duplicate.
+- Grounding an issue in an existing ticket? Pull it with **gh-workflow** (its `fetch-issue` subskill) before filing a duplicate.
 
 ## When NOT to use this skill
 

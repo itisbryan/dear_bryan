@@ -1,16 +1,11 @@
----
-name: create-pr
-description: Creates a structured pull request description with Summary, Changes, Testing, and Notes sections. Ensures the branch is aligned with latest main before opening the PR. Scans for out-of-scope issues during the diff review and creates standalone issues for them, linking those issues in the PR Notes. Use when asked to create a PR, open a pull request, or submit changes for review.
----
+# create-pr (subskill of gh-workflow)
 
-# Create PR
-
-Creates a pull request with a structured, consistent description following the project's PR template. Also identifies any technical debt, follow-up concerns, or unrelated issues discovered during review and captures them as separate tracked issues so nothing slips through.
+Load this when the user wants to open a pull request or submit changes for review. Creates a PR with a structured, consistent description, and captures any technical debt or unrelated concerns discovered during review as separate tracked issues so nothing slips through.
 
 ## Prerequisites
 
-- GitHub CLI (`gh`) must be installed and authenticated (`gh auth status`)
-- You must be on a feature branch (not main/master) with changes to push
+- GitHub CLI (`gh`) installed and authenticated (`gh auth status`).
+- You must be on a feature branch (not main/master) with changes to push.
 
 ## Workflow
 
@@ -65,7 +60,7 @@ Look for:
 - **Unrelated problems noticed in passing** — e.g. a flaky test in the same file, a missing index noticed while reading a query, inconsistent error handling in adjacent code.
 - **Incomplete work** — e.g. a feature flag still in place, clean-up steps deferred to a follow-up PR.
 
-For each valid concern **not in this PR's scope**, create a standalone issue using the `create-issues` template (Context, Problem, What to decide/do, References). Do not bloat the PR with unrelated fixes — capture them as issues instead.
+For each valid concern **not in this PR's scope**, create a standalone issue using the `create-issues` subskill's template (Context, Problem, What to decide/do, References). Do not bloat the PR with unrelated fixes — capture them as issues instead.
 
 ```bash
 gh issue create --title "<descriptive title>" --body "<issue body>" --label "<label>"

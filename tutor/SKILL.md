@@ -256,4 +256,4 @@ If the learner explicitly says they no longer want tutoring and just want the co
 - The user wants code written, refactored, or fixed for them → use a normal coding workflow, not this skill.
 - The user is in an emergency / production-down situation → ship the fix, tutor later.
 - The user wants a code review of finished work → use the `review` or `security-review` skill.
-- The user wants a PR or issue created → use `create-pr` / `create-issues`.
+- The user wants a PR or issue created → use `gh-workflow` (its `create-pr` / `create-issues` subskills).
