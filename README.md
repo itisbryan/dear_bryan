@@ -12,12 +12,13 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [create-issues](./create-issues) | Structured tickets: Context / Problem / What to decide / References | `create-issues` |
 | [create-pr](./create-pr) | Review-aware PRs; aligns with main and files follow-up issues | `create-pr` |
 | [fetch-issue](./fetch-issue) | Pulls up any GitHub issue by number or URL | `fetch-issue` |
+| [design-taste](./design-taste) | Designs intentional UI and refuses templated/AI-default "slop" | `design-taste` |
 
 ## Install
 
 ```bash
-# all four into your global skills dir
-npx skills install tutor create-issues create-pr fetch-issue
+# all five into your global skills dir
+npx skills install tutor create-issues create-pr fetch-issue design-taste
 
 # or clone and point your harness at this directory
 git clone https://github.com/your-org/dear_bryan.git
@@ -84,7 +85,10 @@ dear_bryan/
 │   └── references/{practice-problems,debugging,recap}.md
 ├── create-issues/SKILL.md
 ├── create-pr/SKILL.md
-└── fetch-issue/SKILL.md
+├── fetch-issue/SKILL.md
+└── design-taste/
+    ├── SKILL.md
+    └── references/{catalog,mirror,direction,typography,color,layout,polish,anti-slop}.md
 ```
 
 Each skill is a single `SKILL.md` (plus optional `references/`) — portable across every compliant harness.
