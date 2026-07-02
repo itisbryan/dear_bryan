@@ -1,6 +1,6 @@
 ---
 name: design-taste
-description: Guides distinctive, intentional web/UI design — recommends or lets you pick a direction, or mirrors a specific site ("make it look like Stripe / Linear / this URL"), then builds a real type/color/space system so the result looks decided-on, not defaulted-into. Loads focused references (catalog, mirror, typography, color, layout, polish, anti-slop) on demand. Use when building or restyling a landing page, dashboard, portfolio, or any UI, or when a design "looks generic / templated / like AI made it."
+description: Guides distinctive, intentional web/UI design — recommends or lets you pick a direction, mirrors a specific site's design language, or does a pixel-perfect clone of a page you own ("make it look like Stripe / Linear", "clone this exactly"), then builds a real type/color/space system so the result looks decided-on, not defaulted-into. Loads focused references (catalog, mirror, clone, typography, color, layout, polish, anti-slop) on demand. Use when building or restyling a landing page, dashboard, portfolio, or any UI, or when a design "looks generic / templated / like AI made it."
 ---
 
 # Design Taste
@@ -30,7 +30,9 @@ Every design commits to **one** direction. Three ways to get there:
 
 - **Recommend (default):** inspect the current project — product type, audience, existing brand colors/fonts, framework, current vibe — and recommend the direction that fits, with the reasoning. Use the rubric in [`references/catalog.md`](./references/catalog.md). Say *why* it fits ("dev tool + technical audience → Technical/utilitarian, like Linear").
 - **Choose:** present the catalog menu and let the user pick. Honor an explicit pick even if you'd have recommended otherwise — but flag a genuine mismatch once ("Brutalist on a banking app will read as untrustworthy — sure?").
-- **Mirror a specific site:** the user names a brand or pastes a URL ("make it look like Stripe," "mirror this page"). Load [`references/mirror.md`](./references/mirror.md) — extract its system (signature move, fonts, palette, shape, spacing) and adopt it as the direction. For a live URL, inspect the real page rather than guessing.
+- **Mirror or clone a specific site:** the user names a brand or pastes a URL. Two fidelities — pick by intent, both start in [`references/mirror.md`](./references/mirror.md):
+  - *Mirror the system* ("make it look like Stripe," "a Linear-ish feel") → adopt its design language for your own content.
+  - *Pixel-perfect clone* ("clone this," "rebuild this exactly") → [`references/clone.md`](./references/clone.md): extract exact styles, download assets, verify against the original. Only for sites you own or are authorized to rebuild.
 
 Either way, lock the three artifacts before building: the named direction, 2–3 real reference sites, and one adjective triad ("precise, quiet, engineered"). The deeper *how to commit* guidance is in [`references/direction.md`](./references/direction.md). This is the highest-leverage step and the most-skipped.
 
@@ -61,6 +63,7 @@ Load only on the trigger, not speculatively — progressive disclosure is the po
 |---|---|---|
 | Step 1 — user wants to pick a look or you need to recommend one | [`references/catalog.md`](./references/catalog.md) | The pickable direction menu + a rubric to recommend the one that fits the project. Each entry has starter tokens. |
 | Step 1 — user wants to look like a specific site ("like Stripe", a URL) | [`references/mirror.md`](./references/mirror.md) | Extract a real site's design system; brand cheat-sheet + method for any URL. |
+| User wants a pixel-perfect 1:1 clone of a real page ("clone this exactly") | [`references/clone.md`](./references/clone.md) | Exact computed-style extraction, asset download, section specs, verify-by-comparison. |
 | The direction is chosen but you need to commit & lock it well | [`references/direction.md`](./references/direction.md) | How to commit to one direction, pick references, and lock an adjective triad. |
 | Choosing fonts, sizes, or the type feels flat | [`references/typography.md`](./references/typography.md) | Build a real type system: superfamily/pairing, modular scale, tracking, measure, weights. |
 | Building a palette, or colors look like defaults | [`references/color.md`](./references/color.md) | Neutral ramp + accent, off-black/near-white, contrast (AA), real dark mode. |

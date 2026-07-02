@@ -92,7 +92,7 @@ dear_bryan/
 ├── fetch-issue/SKILL.md
 ├── design-taste/
 │   ├── SKILL.md
-│   └── references/{catalog,mirror,direction,typography,color,layout,polish,anti-slop}.md
+│   └── references/{catalog,mirror,clone,direction,typography,color,layout,polish,anti-slop}.md
 ├── qa-sweep/
 │   ├── SKILL.md
 │   ├── references/severity.md

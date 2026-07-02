@@ -2,6 +2,13 @@
 
 Load this when the user wants to look like a specific site — "make it look like Stripe," "design like Linear," "mirror this page" + URL. Mirroring is a shortcut to a direction: instead of composing one, you adopt a proven system. The one rule still holds — you capture a *system*, you don't ship the source's defaults or its assets.
 
+## Two levels of fidelity — pick first
+
+- **Mirror the system (this file, the default):** adopt the site's design *language* — signature move, palette, type, shape — and apply it to *your own* content. Not pixel-identical, and sidesteps content-ownership entirely. Use for "I want a Stripe-like feel."
+- **Pixel-perfect clone:** reproduce the actual page 1:1 — exact extracted styles, downloaded assets, real text, verified against the original. Heavier, and only appropriate for sites you own or are authorized to rebuild. If the user says "clone," "pixel-perfect," or "rebuild this exactly," load [`clone.md`](./clone.md) instead of continuing here.
+
+The rest of this file is the mirror-the-system path.
+
 ## Two sources
 
 - **Known brand** (Stripe, Linear, Vercel…) → use the cheat-sheet below plus what you know of the site, then **verify against the live site** — tokens drift as brands redesign.
