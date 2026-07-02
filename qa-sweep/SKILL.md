@@ -14,6 +14,14 @@ A structured exploratory QA pass over a running web app. You drive the app like 
 
 If any is missing, ask once, then proceed with sensible defaults.
 
+## Safety first — this skill drives a live app
+
+Exploratory QA clicks and submits forms on a real site, so it can cause real side effects. Before anything else:
+
+- **Target staging/test by default.** Only run against production with the user's explicit go-ahead — confirm the environment before the first navigation.
+- **Non-destructive by default.** Never submit real purchases, delete data, spam signups, send messages, or trigger emails/webhooks. Use obvious throwaway test data (`qa-sweep test`).
+- **Ask before any irreversible or outward-facing action** (payments, deletions, anything that notifies real people). When unsure whether a submit mutates real state, don't — note it as "needs manual testing" instead.
+
 ## The one rule
 
 **Every finding needs reproducible evidence.** A bug report without a screenshot, the exact steps, and the observed-vs-expected is a rumor, not a finding. If you can't reproduce it, say so and mark it unconfirmed — never pad the report with guesses.
@@ -71,7 +79,6 @@ Offer to turn findings into tracked issues: "Found 7 issues — want me to file 
 
 ## Notes
 
-- **Non-destructive by default.** On a production or shared environment, don't submit real purchases, delete data, or spam signups. Use obvious test data (`qa-sweep test`), and ask before any irreversible action.
 - **Breadth first, then depth.** One good pass over everything beats an exhaustive audit of the landing page. Note areas that need deeper testing rather than blocking on them.
 - Grounding an issue in an existing ticket? Pull it with **gh-workflow** (its `fetch-issue` subskill) before filing a duplicate.
 

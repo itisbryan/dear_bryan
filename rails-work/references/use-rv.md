@@ -15,7 +15,8 @@ Load this whenever Ruby versions, gem installation, or "how do I run this" comes
 ```bash
 # install rv (macOS/Linux)
 brew install rv
-# or: curl -LsSf https://rv.dev/install | sh
+# other options (standalone installer, Windows, specific versions):
+# see https://github.com/spinel-coop/rv#install
 
 # shell integration — enables automatic version switching from .ruby-version
 rv shell zsh    # or bash | fish | nu | powershell
