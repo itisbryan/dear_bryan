@@ -50,6 +50,6 @@ Produce a single markdown block, written so a tutor who has never seen this sess
 
 ## Delivery
 
-Write the handoff block to `HANDOFF.md` in this skill's own directory (same folder as `SKILL.md`), overwriting any existing one. This is how the next session finds it: session-flow step 0 reads that file on startup and resumes from it. Also show the block to the learner so they can see the state, and tell them plainly: "Saved — next session I'll read this and pick up exactly here. You don't need to paste anything." Then stop; do not keep tutoring.
+Write the handoff block to `HANDOFF-<topic-slug>.md` in this skill's own directory (same folder as `SKILL.md`) — e.g. `HANDOFF-recursion.md`, `HANDOFF-sql-joins.md`. The per-topic name keeps two paused threads from overwriting each other. Overwrite an existing file only if it's the same topic. This is how the next session finds it: session-flow step 0 scans for `HANDOFF-*.md` on startup and resumes from the matching one. Also show the block to the learner so they can see the state, and tell them plainly: "Saved — next session I'll read this and pick up exactly here. You don't need to paste anything." Then stop; do not keep tutoring.
 
 (Manual fallback: if for any reason you can't write the file, show the block and tell the learner to paste it into the start of their next session.)
