@@ -16,12 +16,13 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
 | [tdd](./tdd) | Test-driven development: red → green → refactor, tests before code | `tdd` |
+| [rails-work](./rails-work) | How I work with Rails — a growing subskill collection (starts with `use-rv`) | `rails-work` |
 
 ## Install
 
 ```bash
-# all eight into your global skills dir
-npx skills install tutor create-issues create-pr fetch-issue design-taste qa-sweep debug tdd
+# all nine into your global skills dir
+npx skills install tutor create-issues create-pr fetch-issue design-taste qa-sweep debug tdd rails-work
 
 # or clone and point your harness at this directory
 git clone https://github.com/your-org/dear_bryan.git
@@ -97,7 +98,10 @@ dear_bryan/
 │   ├── references/severity.md
 │   └── templates/report.md
 ├── debug/SKILL.md
-└── tdd/SKILL.md
+├── tdd/SKILL.md
+└── rails-work/
+    ├── SKILL.md              ← router: how I work with Rails
+    └── references/use-rv.md  ← Ruby versions & gems with rv (not rbenv)
 ```
 
 Each skill is a single `SKILL.md` (plus optional `references/`) — portable across every compliant harness.
