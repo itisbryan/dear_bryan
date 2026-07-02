@@ -15,12 +15,13 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [design-taste](./design-taste) | Designs intentional UI and refuses templated/AI-default "slop" | `design-taste` |
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
+| [tdd](./tdd) | Test-driven development: red → green → refactor, tests before code | `tdd` |
 
 ## Install
 
 ```bash
-# all seven into your global skills dir
-npx skills install tutor create-issues create-pr fetch-issue design-taste qa-sweep debug
+# all eight into your global skills dir
+npx skills install tutor create-issues create-pr fetch-issue design-taste qa-sweep debug tdd
 
 # or clone and point your harness at this directory
 git clone https://github.com/your-org/dear_bryan.git
@@ -95,7 +96,8 @@ dear_bryan/
 │   ├── SKILL.md
 │   ├── references/severity.md
 │   └── templates/report.md
-└── debug/SKILL.md
+├── debug/SKILL.md
+└── tdd/SKILL.md
 ```
 
 Each skill is a single `SKILL.md` (plus optional `references/`) — portable across every compliant harness.
