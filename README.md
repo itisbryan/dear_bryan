@@ -16,6 +16,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
 | [tdd](./tdd) | Test-driven development: red → green → refactor, tests before code | `tdd` |
 | [rails-work](./rails-work) | How I work with Rails — a growing subskill collection (starts with `use-rv`) | `rails-work` |
+| [repo-study](./repo-study) | Learn from a public repo: trace how they solve it in real code, write an evidence-cited learnings doc | `repo-study` |
 
 ## Install
 
@@ -87,6 +88,10 @@ dear_bryan/
 │   ├── SKILL.md
 │   ├── references/severity.md
 │   └── templates/report.md
+├── repo-study/
+│   ├── SKILL.md
+│   ├── references/{general-study,mining-history}.md
+│   └── templates/learnings.md
 ├── brainstorm/SKILL.md
 ├── debug/SKILL.md
 ├── tdd/SKILL.md
