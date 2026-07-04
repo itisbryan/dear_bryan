@@ -12,6 +12,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [brainstorm](./brainstorm) | Turns an idea into an approved design doc before any code gets written | `brainstorm` |
 | [gh-workflow](./gh-workflow) | GitHub issues & PRs via `gh` — subskill collection (create-issues, create-pr, fetch-issue) | `gh-workflow` |
 | [design-taste](./design-taste) | Designs intentional UI and refuses templated/AI-default "slop" | `design-taste` |
+| [macos-app-design](./macos-app-design) | Designs native-feeling macOS app GUIs and refuses web-port "slop" | `macos-app-design` |
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
 | [tdd](./tdd) | Test-driven development: red → green → refactor, tests before code | `tdd` |
@@ -84,6 +85,9 @@ dear_bryan/
 ├── design-taste/
 │   ├── SKILL.md
 │   └── references/{catalog,mirror,clone,direction,typography,color,layout,polish,anti-slop}.md
+├── macos-app-design/
+│   ├── SKILL.md
+│   └── references/{catalog,hig-structure,materials-color,typography,controls,motion-polish,anti-slop}.md
 ├── qa-sweep/
 │   ├── SKILL.md
 │   ├── references/severity.md
