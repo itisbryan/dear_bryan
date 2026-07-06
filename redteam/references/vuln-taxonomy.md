@@ -1,4 +1,4 @@
-# Vulnerability Taxonomy (web-pentest reference)
+# Vulnerability Taxonomy (redteam reference)
 
 Use this to turn the recon map into candidate injection points. Think in **slots** (where operator-controlled data lands) × **render context** (how it's interpreted). A payload only fires if it matches the context it lands in.
 

@@ -1,4 +1,4 @@
-# Bypass Techniques (web-pentest reference)
+# Bypass Techniques (redteam reference)
 
 A "blocked" payload is not proof of safety. Before writing `verdict: false_positive` for a candidate, exhaust the bypass set for its class. A WAF or filter that stops the naive payload often folds to an encoding or casing trick.
 

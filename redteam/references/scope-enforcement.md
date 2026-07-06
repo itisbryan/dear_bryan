@@ -1,4 +1,4 @@
-# Scope Enforcement (web-pentest reference)
+# Scope Enforcement (redteam reference)
 
 This skill is dangerous because it drives network tools, sometimes across several turns. The single most important rule: **every active request must target a host the operator authorized.** This file is the procedure.
 

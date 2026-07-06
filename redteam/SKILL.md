@@ -1,5 +1,5 @@
 ---
-name: web-pentest
+name: redteam
 description: Authorized web-application penetration testing — recon, vulnerability analysis, proof-based exploitation, and a professional report. "No exploit, no report": every finding needs reproducible evidence. Hard guardrails for authorization, scope, and secret-leakage. Use when asked to "pentest [URL]", "security-test this web app", "find vulns in [URL]", or "OWASP-test" a running application the user owns or is authorized to test.
 ---
 
