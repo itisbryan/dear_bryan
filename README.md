@@ -10,7 +10,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 |:---|:---|:---|
 | [tutor](./tutor) | Coaches you to write your own code — never writes the solution for you | `tutor` |
 | [brainstorm](./brainstorm) | Turns an idea into an approved design doc before any code gets written | `brainstorm` |
-| [gh-workflow](./gh-workflow) | GitHub issues & PRs via `gh` — subskill collection (create-issues, create-pr, fetch-issue) | `gh-workflow` |
+| [gh-workflow](./gh-workflow) | GitHub via `gh` — subskill collection: issues, PRs, review, CI triage, wiki (create-issues, create-pr, review-pr, fetch-issue, triage-issues, ci-triage, create-wiki) | `gh-workflow` |
 | [design-taste](./design-taste) | Designs intentional UI and refuses templated/AI-default "slop" | `design-taste` |
 | [macos-app-design](./macos-app-design) | Designs native-feeling macOS app GUIs and refuses web-port "slop" | `macos-app-design` |
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
