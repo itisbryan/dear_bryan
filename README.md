@@ -19,7 +19,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [rails-work](./rails-work) | How I work with Rails — a growing subskill collection (starts with `use-rv`) | `rails-work` |
 | [repo-study](./repo-study) | Learn from a public repo: trace how they solve it in real code, write an evidence-cited learnings doc | `repo-study` |
 | [redteam](./redteam) | Authorized web pentest: recon → analysis → proof-based exploitation → report. "No exploit, no report", hard authorization/scope guardrails | `redteam` |
-| [divide](./divide) | Overwhelmed by an idea's scope? Shrinks it to one shippable slice + one next action, parks the rest. Ships small, beats burnout | `divide` |
+| [momentum](./momentum) | Overwhelmed by an idea's scope? Shrinks it to one shippable slice + one next action, parks the rest. Ships small, beats burnout | `momentum` |
 
 ## Install
 

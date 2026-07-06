@@ -1,9 +1,9 @@
 ---
-name: divide
-description: Turn an overwhelming idea into one shippable slice and one next action — so you start today instead of drowning in the plan. Use when you have an idea you want to build but the scope/plan is overwhelming, when you're stuck at "where do I even start", when a project has stalled, or when you can feel burnout coming from a plan that keeps growing. The opposite of a big plan: it shrinks, it doesn't expand.
+name: momentum
+description: Turn an overwhelming idea into one shippable slice and one next action — so you start today instead of drowning in the plan. Use when you have an idea you want to build but the scope/plan is overwhelming, when you're stuck at "where do I even start", when a project has stalled, or when you can feel burnout coming from a plan that keeps growing. The opposite of a big plan — it shrinks, it doesn't expand.
 ---
 
-# divide
+# momentum
 
 You have an idea. You want to build it. But the moment you try to plan it, the scope balloons — every feature spawns three more, the whole thing feels infinite, and the overwhelm makes you do nothing. That stall *is* the burnout.
 
