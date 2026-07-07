@@ -14,9 +14,9 @@ A thin driver over the [`paracli`](https://github.com/itisbryan/paracli) CLI, wh
 ## Interactive flow
 
 1. **Gather** — `paracli gather` prints my git activity across the indexed repos.
-2. **Draft** — *I* write the note in this turn (I'm the drafter — no LLM subprocess needed), in the template the user's standup uses:
+2. **Draft** — *I* write the note in this turn (I'm the drafter — no LLM subprocess needed). First read the user's configured template — `paracli config` returns it at `.resolved.template` (`full` or `today`); use that shape, don't guess:
    - **full:** `Yesterday:` / `Today:` / `Blockers:`
-   - **today-only:** a single `Today:` block (Parabol responses are free text). Git is *past* activity, so for a forward-looking Today lean on in-progress (uncommitted) work + what the user tells me; ask rather than guess.
+   - **today:** a single `Today:` block (Parabol responses are free text). Git is *past* activity, so for a forward-looking Today lean on in-progress (uncommitted) work + what the user tells me; ask rather than guess.
    Collapse many commits into outcome lines. Show the draft in chat.
 3. **Confirm** — ask "submit?" and **wait for an explicit send word** ("submit"/"post it"). A template or format choice is **not** approval. If the user edits, revise and re-show.
 4. **Submit** — only after the explicit go, write the approved text to a temp file and:
