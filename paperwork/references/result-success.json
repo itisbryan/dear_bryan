@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "spec": "/workspace/docs/runbook.json",
+  "out_dir": "/workspace/build/runbook",
+  "artifacts": {
+    "html": "/workspace/build/runbook/runbook.html",
+    "pdf": "/workspace/build/runbook/runbook.pdf",
+    "png": "/workspace/build/runbook/runbook.png"
+  },
+  "stages": [
+    { "name": "build", "ok": true, "bytes": 42180, "sections": 3, "chapters": 2 },
+    { "name": "render", "ok": true, "mermaid_expected": 1, "mermaid_rendered": 1, "errors": 0, "tables": 0, "code_blocks": 0 }
+  ],
+  "error": null
+}

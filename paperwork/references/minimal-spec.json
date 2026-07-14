@@ -1,0 +1,26 @@
+{
+  "title": "Incident response runbook",
+  "subtitle": "First response and escalation",
+  "tag": "Internal",
+  "footer": "Operations",
+  "accentColor": "#0a6ed1",
+  "locale": "en",
+  "meta": {
+    "Owner": "Operations",
+    "Version": "1.0"
+  },
+  "sections": [
+    {
+      "heading": "1. Purpose",
+      "text": "Use this runbook to coordinate the first response to an incident."
+    },
+    {
+      "heading": "2. Escalation path",
+      "mermaid": "flowchart TD\nA[Incident] --> B{Severity}\nB -->|High| C[Page on-call]\nB -->|Low| D[Create follow-up]"
+    },
+    {
+      "heading": "Warning: Preserve evidence",
+      "text": "Do not delete logs or restart systems until evidence has been captured."
+    }
+  ]
+}

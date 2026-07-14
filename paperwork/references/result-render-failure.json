@@ -1,0 +1,17 @@
+{
+  "ok": false,
+  "spec": "/workspace/docs/runbook.json",
+  "out_dir": "/workspace/build/runbook",
+  "artifacts": {
+    "html": "/workspace/build/runbook/runbook.html",
+    "png": "/workspace/build/runbook/runbook.png"
+  },
+  "stages": [
+    { "name": "build", "ok": true, "bytes": 42180, "sections": 3, "chapters": 2 },
+    { "name": "render", "ok": false, "mermaid_expected": 1, "mermaid_rendered": 0, "errors": 1, "message": "render failed (node exit 1)" }
+  ],
+  "error": {
+    "stage": "render",
+    "message": "render failed (node exit 1)"
+  }
+}

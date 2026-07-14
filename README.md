@@ -21,6 +21,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [redteam](./redteam) | Authorized web pentest: recon → analysis → proof-based exploitation → report. "No exploit, no report", hard authorization/scope guardrails | `redteam` |
 | [parabol](./parabol) | Draft my daily standup from git activity + notes + dictation, then submit to Parabol on my OK (draft-then-confirm, never auto-posts). Harness-agnostic; optional launchd + ntfy automation | `parabol` |
 | [momentum](./momentum) | Overwhelmed by an idea's scope? Shrinks it to one shippable slice + one next action, parks the rest. Ships small, beats burnout | `momentum` |
+| [paperwork](./paperwork) | Create polished HTML, PDF, and PNG documents from structured `spec.json`; agents consume deterministic `--json` production results | `paperwork` |
 
 ## Install
 
