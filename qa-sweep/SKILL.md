@@ -11,6 +11,7 @@ A structured exploratory QA pass over a running web app. You drive the app like 
 
 - **A browser/automation toolset** — the ability to navigate to a URL, snapshot the page (DOM/accessibility tree), click and type, read the console, scroll, and take screenshots. In Claude Code this is the Playwright MCP browser tools; in other harnesses it's whatever browser control is available. This skill is written against those *capabilities*, not any one tool's names.
 - **From the user:** a **target URL**, a **scope** (which areas/flows, or "full site"), and optionally an **output dir** (default `./qa-sweep-output/`).
+- **Optional prior QA context:** a `qa-import/v1` JSON document produced by [`qa-import`](../qa-import/SKILL.md).
 
 If any is missing, ask once, then proceed with sensible defaults.
 
@@ -38,6 +39,8 @@ Set up `{output_dir}/screenshots/` and sketch a rough map of what to test from t
 
 Keep the plan lightweight — a checklist, not a spec. Adapt it as you discover the app.
 
+If prior `qa-import/v1` JSON is provided, load its `source`, `summary`, and `records` before exploring. Use historical Fail rows as candidate regression checks and their source locations/raw fields for traceability. Group and sequence related checks by non-null `module` when that improves coverage planning; keep null-module records in an unclassified group rather than guessing. A module is routing/planning context, not evidence that the historical row is a bug. Imported rows are still `unconfirmed` until reproduced against this target. Pass rows describe previously observed coverage, not proof that the flow passes now; retest relevant flows. Feature Requested rows are product requests, not confirmed current bugs, and stay out of findings unless current behavior independently violates an explicit expectation. Do not invent a category for `null` imports—classify only after observing the current app.
+
 ### 2. Explore
 
 For each page/flow in the plan:
@@ -57,20 +60,22 @@ For each candidate issue, capture while it's fresh:
 - The **exact steps** to reproduce (URL + clicks + input).
 - **Observed vs. expected** behavior.
 - Any **console output** verbatim.
+- A candidate **module** only when the current evidence and known architecture support one.
 
 ### 4. Classify
 
 Score each issue against [`references/severity.md`](./references/severity.md):
 - **Severity:** Critical / High / Medium / Low.
 - **Category:** Functional / Visual / Accessibility / Console / UX / Content.
+- **Module (optional):** the narrowest evidence-supported ownership/layer label, using project-consistent names such as Backend, Frontend, Mobile, Infrastructure, AI/Chatbot, or Integration. Leave it null/omitted when uncertain, and do not confuse a feature/product name with a technical module.
 
-Be honest — inflating severity trains the reader to ignore you.
+Module is an independent planning and routing dimension. It does not prove that behavior is a bug and must not determine confirmation, severity, or category. Be honest—inflating severity or ownership confidence trains the reader to ignore you.
 
 ### 5. Report
 
 1. De-duplicate — merge the same bug seen in multiple places into one finding.
 2. Assign final severity + category; sort Critical → Low.
-3. Fill [`templates/report.md`](./templates/report.md): executive-summary counts, overall assessment, then one entry per finding with its evidence.
+3. Fill [`templates/report.md`](./templates/report.md): executive-summary counts, overall assessment, then one entry per finding with its evidence and evidence-supported module when known.
 4. Save to `{output_dir}/report.md`.
 
 ### 6. File the findings (optional)
@@ -81,6 +86,7 @@ Offer to turn findings into tracked issues: "Found 7 issues — want me to file 
 
 - **Breadth first, then depth.** One good pass over everything beats an exhaustive audit of the landing page. Note areas that need deeper testing rather than blocking on them.
 - Grounding an issue in an existing ticket? Pull it with **gh-workflow** (its `fetch-issue` subskill) before filing a duplicate.
+- Imported QA JSON is prior context, never evidence by itself. A report finding still needs current reproduction and evidence under **The one rule**.
 
 ## When NOT to use this skill
 

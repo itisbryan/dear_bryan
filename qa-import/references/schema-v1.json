@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/itisbryan/dear_bryan/qa-import/references/schema-v1.json",
+  "title": "qa-import deterministic QA context document v1",
+  "description": "Lossless-enough normalized QA rows for use as prior context by qa-sweep. Null taxonomy and module values are intentionally not inferred by the parser.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source", "summary", "records"],
+  "properties": {
+    "schema_version": { "const": "qa-import/v1" },
+    "source": { "$ref": "#/$defs/sourceMetadata" },
+    "summary": { "$ref": "#/$defs/summary" },
+    "records": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/record" }
+    }
+  },
+  "$defs": {
+    "nullableString": { "type": ["string", "null"] },
+    "counts": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "sourceMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file_name", "format", "row_visibility", "sheets"],
+      "properties": {
+        "file_name": { "type": "string", "description": "Input basename; directory paths are omitted for deterministic, portable output." },
+        "format": { "enum": ["csv", "xlsx"] },
+        "row_visibility": { "enum": ["all_rows", "visible_only"], "description": "Whether hidden XLSX rows were eligible for import. CSV is always all_rows." },
+        "sheets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "header_row", "record_count"],
+            "properties": {
+              "name": { "$ref": "#/$defs/nullableString", "description": "Null for CSV." },
+              "header_row": { "type": "integer", "minimum": 1 },
+              "record_count": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_records", "hidden_records_excluded", "status_counts", "severity_counts"],
+      "properties": {
+        "total_records": { "type": "integer", "minimum": 0 },
+        "hidden_records_excluded": { "type": "integer", "minimum": 0, "description": "Meaningful records omitted by the explicit visible_only policy; zero for all_rows." },
+        "status_counts": { "$ref": "#/$defs/counts" },
+        "severity_counts": { "$ref": "#/$defs/counts" }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "id", "title", "preconditions", "steps_raw", "steps", "test_data", "expected", "observed", "status", "severity", "priority", "platform", "module", "environment", "date", "notes", "evidence_urls", "category", "confirmation", "extra_fields", "raw_fields"],
+      "properties": {
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sheet", "row"],
+          "properties": {
+            "sheet": { "$ref": "#/$defs/nullableString" },
+            "row": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "id": { "$ref": "#/$defs/nullableString" },
+        "title": { "$ref": "#/$defs/nullableString" },
+        "preconditions": { "$ref": "#/$defs/nullableString" },
+        "steps_raw": { "$ref": "#/$defs/nullableString" },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "test_data": { "$ref": "#/$defs/nullableString" },
+        "expected": { "$ref": "#/$defs/nullableString" },
+        "observed": { "$ref": "#/$defs/nullableString" },
+        "status": { "$ref": "#/$defs/nullableString" },
+        "severity": { "enum": ["Critical", "High", "Medium", "Low", null] },
+        "priority": { "$ref": "#/$defs/nullableString" },
+        "platform": { "$ref": "#/$defs/nullableString" },
+        "module": {
+          "type": ["string", "null"],
+          "description": "Agent-assigned semantic ownership or technical layer. The parser always emits null and never derives this value from workbook Function Name metadata. Labels are project-specific, not a closed taxonomy.",
+          "examples": [null, "Backend", "Frontend", "Mobile", "Infrastructure", "AI/Chatbot", "Integration"]
+        },
+        "environment": { "$ref": "#/$defs/nullableString" },
+        "date": { "type": ["string", "null"], "format": "date" },
+        "notes": { "$ref": "#/$defs/nullableString" },
+        "evidence_urls": { "type": "array", "items": { "type": "string", "format": "uri", "pattern": "^https?://", "description": "Canonical RFC 3986-compatible HTTP(S) URI with valid percent escapes. Unicode and IDNs are parser-serialized; literal brackets are limited to IPv6 authorities. Multiple source URLs must be whitespace-separated because comma/semicolon-concatenated schemes remain one conservative candidate." } },
+        "category": { "enum": ["Functional", "Visual", "Accessibility", "Console", "UX", "Content", null] },
+        "confirmation": { "const": "unconfirmed", "description": "Import does not prove current reproducibility." },
+        "extra_fields": { "$ref": "#/$defs/stringMap", "description": "Non-empty values from unmapped columns." },
+        "raw_fields": { "$ref": "#/$defs/stringMap", "description": "Every source column value keyed by original or synthetic header." }
+      }
+    }
+  }
+}

@@ -30,6 +30,7 @@ Sorted Critical → Low. One block per finding.
 ### {N}. {short title} — {🔴/🟠/🟡/🔵} {Severity} · {Category}
 
 - **Where:** {page/URL/component}
+- **Module:** {narrowest evidence-supported ownership/layer label, or "Unclassified"}
 - **Steps to reproduce:**
   1. {step}
   2. {step}
