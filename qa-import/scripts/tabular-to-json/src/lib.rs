@@ -130,8 +130,25 @@ fn is_record_row(
     fields: &[Option<Field>],
     id_column_present: bool,
 ) -> bool {
+    let has_value = |wanted: Field| {
+        fields.iter().enumerate().any(|(index, field)| {
+            *field == Some(wanted)
+                && row
+                    .cells
+                    .get(index)
+                    .is_some_and(|cell| !cell.raw.trim().is_empty())
+        })
+    };
     if id_column_present {
-        return field_cell(row, fields, Field::Id).is_some_and(|cell| !cell.raw.trim().is_empty());
+        return has_value(Field::Id)
+            || [
+                Field::Status,
+                Field::Severity,
+                Field::Priority,
+                Field::Category,
+            ]
+            .into_iter()
+            .any(has_value);
     }
     fields.iter().enumerate().any(|(index, field)| {
         field.is_some()
@@ -208,17 +225,6 @@ fn mapped_cells<'a>(
         }
     }
     result
-}
-
-fn field_cell<'a>(
-    row: &'a input::SourceRow,
-    fields: &[Option<Field>],
-    wanted: Field,
-) -> Option<&'a Cell> {
-    fields
-        .iter()
-        .position(|field| *field == Some(wanted))
-        .and_then(|index| row.cells.get(index))
 }
 
 fn unique_headers(row: &input::SourceRow, width: usize, offset: usize) -> Vec<String> {

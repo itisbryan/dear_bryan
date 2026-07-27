@@ -1,5 +1,6 @@
 use chrono::NaiveDate;
 use std::collections::HashSet;
+use url::Url;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Field {
@@ -67,14 +68,9 @@ pub fn text(value: Option<&str>) -> Option<String> {
 }
 
 pub fn id(value: Option<&str>) -> Option<String> {
-    text(value).map(|value| {
-        if let Ok(number) = value.parse::<f64>() {
-            if number.is_finite() && number.fract() == 0.0 {
-                return format!("{number:.0}");
-            }
-        }
-        value
-    })
+    value
+        .filter(|value| !value.trim().is_empty())
+        .map(str::to_string)
 }
 
 pub fn status(value: Option<&str>) -> Option<String> {
@@ -201,23 +197,49 @@ pub fn split_steps(raw: Option<&str>) -> Vec<String> {
 
 pub fn evidence_urls(values: impl Iterator<Item = String>) -> Vec<String> {
     let mut result = Vec::new();
+    let mut seen = HashSet::new();
     for value in values {
-        let bytes = value.as_bytes();
         let mut index = 0;
-        while index < bytes.len() {
+        while index < value.len() {
             let tail = &value[index..];
-            let offset = match (tail.find("https://"), tail.find("http://")) {
-                (Some(https), Some(http)) => Some(https.min(http)),
-                (https, http) => https.or(http),
+            let scheme_length = if tail
+                .get(..8)
+                .is_some_and(|scheme| scheme.eq_ignore_ascii_case("https://"))
+            {
+                Some(8)
+            } else if tail
+                .get(..7)
+                .is_some_and(|scheme| scheme.eq_ignore_ascii_case("http://"))
+            {
+                Some(7)
+            } else {
+                None
             };
-            let Some(offset) = offset else { break };
-            let start = index + offset;
+            let Some(scheme_length) = scheme_length else {
+                index += tail.chars().next().map_or(1, char::len_utf8);
+                continue;
+            };
+            if value[..index]
+                .chars()
+                .next_back()
+                .is_some_and(|character| character.is_ascii_alphanumeric())
+            {
+                index += scheme_length;
+                continue;
+            }
+            let start = index;
             let end = value[start..]
-                .find(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '<' | '>'))
+                .find(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '<' | '>' | '`'))
                 .map_or(value.len(), |length| start + length);
-            let url = value[start..end].trim_end_matches([',', '.', ';', ':', ')', ']', '}']);
-            if !url.is_empty() && !result.iter().any(|existing| existing == url) {
-                result.push(url.to_string());
+            let candidate =
+                value[start..end].trim_end_matches([',', '.', ';', ':', '!', '?', ')', ']', '}']);
+            if let Ok(parsed) = Url::parse(candidate) {
+                if matches!(parsed.scheme(), "http" | "https")
+                    && parsed.host_str().is_some_and(|host| !host.is_empty())
+                    && seen.insert(parsed.to_string())
+                {
+                    result.push(candidate.to_string());
+                }
             }
             index = end.max(start + 1);
         }

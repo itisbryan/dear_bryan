@@ -24,7 +24,7 @@ cargo build --release --locked
 ./target/release/tabular-to-json report.csv --compact
 ```
 
-JSON is pretty-printed to stdout by default. `--output/-o` writes a file, `--sheet` selects one XLSX sheet, `--header` supplies a 1-based header row, and `--compact` disables pretty printing. The CLI refuses to overwrite its input. Run `--help` for the current interface. Errors go to stderr and return a nonzero exit.
+JSON is pretty-printed to stdout by default. `--output/-o` atomically writes a file in its destination directory, `--sheet` selects one XLSX sheet, `--header` supplies a 1-based header row, and `--compact` disables pretty printing. The CLI refuses input aliases and output symlinks rather than risking input overwrite. Run `--help` for the current interface. Errors go to stderr and return a nonzero exit.
 
 ## Workflow
 
@@ -54,18 +54,18 @@ If detection is wrong or intentionally sparse, pass `--header N`. A sheet withou
 
 ## Conservative normalization
 
-- Numeric IDs become decimal strings; textual IDs are trimmed and retained.
+- Non-empty textual IDs are preserved exactly, including surrounding characters, leading zeroes, and values too large for machine integers. Numeric XLSX IDs use the spreadsheet reader's numeric value and render integer-like values as decimal strings.
 - Excel date cells and ISO `YYYY-MM-DD`/`YYYY/MM/DD` text become ISO dates. Ambiguous localized text dates remain `null` and survive in `raw_fields`.
 - Known statuses become `Fail`, `Pass`, `Feature Requested`, `Pending`, `Blocked`, `Not Run`, or `In Progress`. Unknown statuses remain trimmed source text.
 - Severity aliases map only to `Critical`, `High`, `Medium`, or `Low`; unknown values are `null`.
 - Priority codes such as `P0 - Urgent` become `P0`; known word priorities are canonicalized. Unknown priority is `null`.
 - Common platform/environment aliases are canonicalized; unknown non-empty values remain unchanged.
 - Two or more numbered reproduction lines become `steps`; `steps_raw` always retains the original text. Non-numbered text remains one step.
-- Distinct HTTP(S) URLs found anywhere in a row become `evidence_urls`.
+- Valid HTTP(S) URLs with a host found anywhere in a row become `evidence_urls`. Scheme matching is case-insensitive, surrounding sentence punctuation is removed, and equivalent duplicates retain their first-seen spelling and order.
 - Category is accepted only when it exactly matches the qa-sweep taxonomy. It is otherwise `null`.
 - Every imported row is `unconfirmed`: spreadsheet history does not establish current behavior.
 
-When an ID column exists, rows with a blank ID are treated as scratch/section rows and skipped. Without an ID column, any row with a recognized non-empty field is imported. Formula cells use their cached workbook value. Styled empty rows do not become records.
+Without an ID column, any row with a recognized non-empty field is imported. With an ID column, a blank-ID row is still imported when it has an explicit row-level status or taxonomy marker (status, severity, priority, or category); this retains independently classified QA records while avoiding continuation/section rows. Fully empty rows, blank separators, and styled cells without values do not become records. Formula cells use their cached workbook value.
 
 ## v1 contract
 

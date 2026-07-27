@@ -87,7 +87,7 @@
         "environment": { "$ref": "#/$defs/nullableString" },
         "date": { "type": ["string", "null"], "format": "date" },
         "notes": { "$ref": "#/$defs/nullableString" },
-        "evidence_urls": { "type": "array", "items": { "type": "string", "format": "uri", "pattern": "^https?://" } },
+        "evidence_urls": { "type": "array", "items": { "type": "string", "format": "uri", "pattern": "^[hH][tT][tT][pP][sS]?://" } },
         "category": { "enum": ["Functional", "Visual", "Accessibility", "Console", "UX", "Content", null] },
         "confirmation": { "const": "unconfirmed", "description": "Import does not prove current reproducibility." },
         "extra_fields": { "$ref": "#/$defs/stringMap", "description": "Non-empty values from unmapped columns." },

@@ -76,6 +76,53 @@ fn imports_csv_with_detected_header_and_lossless_fields() {
 }
 
 #[test]
+fn retains_meaningful_blank_id_rows_and_exact_text_ids() {
+    let dir = TestDir::new();
+    let input = dir.path().join("ids.csv");
+    fs::write(
+        &input,
+        "ID,Title,Status,Notes\n,Unassigned bug,Fail,keep\n,Continuation row,,detail\n,,,\n\" 000123 \",Leading zero,Pass,\n123456789012345678901234567890,Large ID,Fail,\n",
+    )
+    .unwrap();
+
+    let output = run(&input, &[]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["summary"]["total_records"], 3);
+    assert!(json["records"][0]["id"].is_null());
+    assert_eq!(json["records"][0]["title"], "Unassigned bug");
+    assert_eq!(json["records"][1]["id"], " 000123 ");
+    assert_eq!(json["records"][2]["id"], "123456789012345678901234567890");
+}
+
+#[test]
+fn extracts_only_valid_http_urls_case_insensitively_and_stably_deduplicates() {
+    let dir = TestDir::new();
+    let input = dir.path().join("urls.csv");
+    fs::write(
+        &input,
+        "Title,Status,Evidence\nBug,Fail,\"See (HTTP://Example.test/proof), HTTP://Example.test/proof; http:// https://:443/no https://example.test:bad/path and ftp://example.test/no\"\n",
+    )
+    .unwrap();
+
+    let output = run(&input, &[]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        json["records"][0]["evidence_urls"],
+        serde_json::json!(["HTTP://Example.test/proof"])
+    );
+}
+
+#[test]
 fn imports_generated_xlsx_and_honors_sheet_header_and_output_flags() {
     let dir = TestDir::new();
     let input = dir.path().join("qa.xlsx");
@@ -157,6 +204,41 @@ fn imports_generated_xlsx_and_honors_sheet_header_and_output_flags() {
 }
 
 #[test]
+fn xlsx_retains_blank_ids_skips_styled_empty_rows_and_renders_numeric_ids() {
+    let dir = TestDir::new();
+    let input = dir.path().join("ids.xlsx");
+    let mut workbook = Workbook::new();
+    let sheet = workbook.add_worksheet();
+    sheet.write_string(0, 0, "ID").unwrap();
+    sheet.write_string(0, 1, "Title").unwrap();
+    sheet.write_string(0, 2, "Status").unwrap();
+    sheet.write_string(1, 1, "Blank ID bug").unwrap();
+    sheet.write_string(1, 2, "Fail").unwrap();
+    let styled = Format::new().set_background_color("#FFFF00");
+    sheet.write_blank(2, 0, &styled).unwrap();
+    sheet.write_blank(2, 1, &styled).unwrap();
+    sheet.write_number(3, 0, 9_007_199_254_740_992.0).unwrap();
+    sheet.write_string(3, 1, "Numeric ID").unwrap();
+    sheet.write_string(3, 2, "Pass").unwrap();
+    sheet.write_string(4, 0, "000007").unwrap();
+    sheet.write_string(4, 1, "Text ID").unwrap();
+    sheet.write_string(4, 2, "Pass").unwrap();
+    workbook.save(&input).unwrap();
+
+    let output = run(&input, &[]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["summary"]["total_records"], 3);
+    assert!(json["records"][0]["id"].is_null());
+    assert_eq!(json["records"][1]["id"], "9007199254740992");
+    assert_eq!(json["records"][2]["id"], "000007");
+}
+
+#[test]
 fn preserves_physical_csv_rows_after_multiline_records() {
     let dir = TestDir::new();
     let input = dir.path().join("rows.csv");
@@ -184,6 +266,46 @@ fn refuses_to_overwrite_the_input() {
     assert!(!output.status.success());
     assert!(String::from_utf8_lossy(&output.stderr).contains("same file"));
     assert_eq!(fs::read_to_string(input).unwrap(), original);
+}
+
+#[cfg(unix)]
+#[test]
+fn refuses_to_overwrite_a_hard_link_to_the_input() {
+    let dir = TestDir::new();
+    let input = dir.path().join("bugs.csv");
+    let alias = dir.path().join("alias.json");
+    let original = "Title,Status\nBug,Fail\n";
+    fs::write(&input, original).unwrap();
+    fs::hard_link(&input, &alias).unwrap();
+
+    let output = run(&input, &["--output", alias.to_str().unwrap()]);
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("same file"));
+    assert_eq!(fs::read_to_string(&input).unwrap(), original);
+    assert_eq!(fs::read_to_string(&alias).unwrap(), original);
+}
+
+#[cfg(unix)]
+#[test]
+fn refuses_an_output_symlink_without_modifying_its_target() {
+    use std::os::unix::fs::symlink;
+
+    let dir = TestDir::new();
+    let input = dir.path().join("bugs.csv");
+    let target = dir.path().join("existing.json");
+    let output_path = dir.path().join("output.json");
+    fs::write(&input, "Title,Status\nBug,Fail\n").unwrap();
+    fs::write(&target, "do not replace").unwrap();
+    symlink(&target, &output_path).unwrap();
+
+    let output = run(&input, &["--output", output_path.to_str().unwrap()]);
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("symlink"));
+    assert_eq!(fs::read_to_string(&target).unwrap(), "do not replace");
+    assert!(fs::symlink_metadata(&output_path)
+        .unwrap()
+        .file_type()
+        .is_symlink());
 }
 
 #[test]
