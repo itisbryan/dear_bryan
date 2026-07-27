@@ -224,6 +224,7 @@ fn build_record(
         severity: normalize::severity(raw(Field::Severity)),
         priority: normalize::priority(raw(Field::Priority)),
         platform: normalize::platform(raw(Field::Platform)),
+        module: None,
         environment: normalize::environment(raw(Field::Environment)),
         date: normalize::date(
             raw(Field::Date),

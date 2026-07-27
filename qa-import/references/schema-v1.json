@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/itisbryan/dear_bryan/qa-import/references/schema-v1.json",
   "title": "qa-import deterministic QA context document v1",
-  "description": "Lossless-enough normalized QA rows for use as prior context by qa-sweep. Null taxonomy values are intentionally not inferred.",
+  "description": "Lossless-enough normalized QA rows for use as prior context by qa-sweep. Null taxonomy and module values are intentionally not inferred by the parser.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "source", "summary", "records"],
@@ -63,7 +63,7 @@
     "record": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source", "id", "title", "preconditions", "steps_raw", "steps", "test_data", "expected", "observed", "status", "severity", "priority", "platform", "environment", "date", "notes", "evidence_urls", "category", "confirmation", "extra_fields", "raw_fields"],
+      "required": ["source", "id", "title", "preconditions", "steps_raw", "steps", "test_data", "expected", "observed", "status", "severity", "priority", "platform", "module", "environment", "date", "notes", "evidence_urls", "category", "confirmation", "extra_fields", "raw_fields"],
       "properties": {
         "source": {
           "type": "object",
@@ -86,6 +86,11 @@
         "severity": { "enum": ["Critical", "High", "Medium", "Low", null] },
         "priority": { "$ref": "#/$defs/nullableString" },
         "platform": { "$ref": "#/$defs/nullableString" },
+        "module": {
+          "type": ["string", "null"],
+          "description": "Agent-assigned semantic ownership or technical layer. The parser always emits null and never derives this value from workbook Function Name metadata. Labels are project-specific, not a closed taxonomy.",
+          "examples": [null, "Backend", "Frontend", "Mobile", "Infrastructure", "AI/Chatbot", "Integration"]
+        },
         "environment": { "$ref": "#/$defs/nullableString" },
         "date": { "type": ["string", "null"], "format": "date" },
         "notes": { "$ref": "#/$defs/nullableString" },

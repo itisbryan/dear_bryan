@@ -69,6 +69,8 @@ fn imports_csv_with_detected_header_and_lossless_fields() {
     assert_eq!(record["platform"], "Web");
     assert_eq!(record["environment"], "Production");
     assert_eq!(record["date"], "2026-07-09");
+    assert!(record.as_object().unwrap().contains_key("module"));
+    assert!(record["module"].is_null());
     assert_eq!(record["confirmation"], "unconfirmed");
     assert!(record["category"].is_null());
     assert_eq!(record["evidence_urls"][0], "https://example.test/proof.png");
@@ -389,6 +391,9 @@ fn xlsx_visibility_is_lossless_by_default_and_explicit_when_filtered() {
     assert_eq!(json["source"]["row_visibility"], "all_rows");
     assert_eq!(json["summary"]["total_records"], 2);
     assert_eq!(json["summary"]["hidden_records_excluded"], 0);
+    assert!(json["records"].as_array().unwrap().iter().all(|record| {
+        record.as_object().unwrap().contains_key("module") && record["module"].is_null()
+    }));
     assert!(json["records"][0]["id"].is_null());
     assert!(json["records"][0]["status"].is_null());
     assert_eq!(json["records"][0]["title"], "Search loses filters");
@@ -407,6 +412,11 @@ fn xlsx_visibility_is_lossless_by_default_and_explicit_when_filtered() {
     assert_eq!(json["source"]["row_visibility"], "visible_only");
     assert_eq!(json["summary"]["total_records"], 1);
     assert_eq!(json["summary"]["hidden_records_excluded"], 1);
+    assert!(json["records"][0]
+        .as_object()
+        .unwrap()
+        .contains_key("module"));
+    assert!(json["records"][0]["module"].is_null());
     assert_eq!(json["records"][0]["title"], "Search loses filters");
 }
 

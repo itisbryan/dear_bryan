@@ -49,6 +49,7 @@ pub struct Record {
     pub severity: Option<String>,
     pub priority: Option<String>,
     pub platform: Option<String>,
+    pub module: Option<String>,
     pub environment: Option<String>,
     pub date: Option<String>,
     pub notes: Option<String>,

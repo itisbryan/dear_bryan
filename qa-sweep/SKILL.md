@@ -39,7 +39,7 @@ Set up `{output_dir}/screenshots/` and sketch a rough map of what to test from t
 
 Keep the plan lightweight — a checklist, not a spec. Adapt it as you discover the app.
 
-If prior `qa-import/v1` JSON is provided, load its `source`, `summary`, and `records` before exploring. Use historical Fail rows as candidate regression checks and their source locations/raw fields for traceability. They are still `unconfirmed` until reproduced against this target. Pass rows describe previously observed coverage, not proof that the flow passes now; retest relevant flows. Feature Requested rows are product requests, not confirmed current bugs, and stay out of findings unless current behavior independently violates an explicit expectation. Do not invent a category for `null` imports—classify only after observing the current app.
+If prior `qa-import/v1` JSON is provided, load its `source`, `summary`, and `records` before exploring. Use historical Fail rows as candidate regression checks and their source locations/raw fields for traceability. Group and sequence related checks by non-null `module` when that improves coverage planning; keep null-module records in an unclassified group rather than guessing. A module is routing/planning context, not evidence that the historical row is a bug. Imported rows are still `unconfirmed` until reproduced against this target. Pass rows describe previously observed coverage, not proof that the flow passes now; retest relevant flows. Feature Requested rows are product requests, not confirmed current bugs, and stay out of findings unless current behavior independently violates an explicit expectation. Do not invent a category for `null` imports—classify only after observing the current app.
 
 ### 2. Explore
 
@@ -60,20 +60,22 @@ For each candidate issue, capture while it's fresh:
 - The **exact steps** to reproduce (URL + clicks + input).
 - **Observed vs. expected** behavior.
 - Any **console output** verbatim.
+- A candidate **module** only when the current evidence and known architecture support one.
 
 ### 4. Classify
 
 Score each issue against [`references/severity.md`](./references/severity.md):
 - **Severity:** Critical / High / Medium / Low.
 - **Category:** Functional / Visual / Accessibility / Console / UX / Content.
+- **Module (optional):** the narrowest evidence-supported ownership/layer label, using project-consistent names such as Backend, Frontend, Mobile, Infrastructure, AI/Chatbot, or Integration. Leave it null/omitted when uncertain, and do not confuse a feature/product name with a technical module.
 
-Be honest — inflating severity trains the reader to ignore you.
+Module is an independent planning and routing dimension. It does not prove that behavior is a bug and must not determine confirmation, severity, or category. Be honest—inflating severity or ownership confidence trains the reader to ignore you.
 
 ### 5. Report
 
 1. De-duplicate — merge the same bug seen in multiple places into one finding.
 2. Assign final severity + category; sort Critical → Low.
-3. Fill [`templates/report.md`](./templates/report.md): executive-summary counts, overall assessment, then one entry per finding with its evidence.
+3. Fill [`templates/report.md`](./templates/report.md): executive-summary counts, overall assessment, then one entry per finding with its evidence and evidence-supported module when known.
 4. Save to `{output_dir}/report.md`.
 
 ### 6. File the findings (optional)
