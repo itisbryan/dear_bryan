@@ -10,6 +10,7 @@ pub struct Cell {
 #[derive(Debug)]
 pub struct SourceRow {
     pub number: usize,
+    pub hidden: bool,
     pub cells: Vec<Cell>,
 }
 
@@ -21,7 +22,11 @@ pub struct Table {
     pub rows: Vec<SourceRow>,
 }
 
-pub fn load(path: &Path, requested_sheet: Option<&str>) -> Result<(String, Vec<Table>), String> {
+pub fn load(
+    path: &Path,
+    requested_sheet: Option<&str>,
+    visible_only: bool,
+) -> Result<(String, Vec<Table>), String> {
     let extension = path
         .extension()
         .and_then(|value| value.to_str())
@@ -32,9 +37,12 @@ pub fn load(path: &Path, requested_sheet: Option<&str>) -> Result<(String, Vec<T
             if requested_sheet.is_some() {
                 return Err("--sheet is only valid for .xlsx input".to_string());
             }
+            if visible_only {
+                return Err("--visible-only is only valid for .xlsx input".to_string());
+            }
             Ok((extension, vec![load_csv(path)?]))
         }
-        "xlsx" => Ok((extension, load_xlsx(path, requested_sheet)?)),
+        "xlsx" => Ok((extension, load_xlsx(path, requested_sheet, visible_only)?)),
         _ => Err(format!(
             "unsupported input format '.{extension}'; expected .csv or .xlsx"
         )),
@@ -63,7 +71,11 @@ fn load_csv(path: &Path) -> Result<Table, String> {
         let number = record
             .position()
             .map_or(index + 1, |position| position.line() as usize);
-        rows.push(SourceRow { number, cells });
+        rows.push(SourceRow {
+            number,
+            hidden: false,
+            cells,
+        });
     }
     Ok(Table {
         sheet: None,
@@ -73,8 +85,16 @@ fn load_csv(path: &Path) -> Result<Table, String> {
     })
 }
 
-fn load_xlsx(path: &Path, requested_sheet: Option<&str>) -> Result<Vec<Table>, String> {
-    let hidden_rows = crate::xlsx_metadata::hidden_rows(path)?;
+fn load_xlsx(
+    path: &Path,
+    requested_sheet: Option<&str>,
+    visible_only: bool,
+) -> Result<Vec<Table>, String> {
+    let hidden_rows = if visible_only {
+        crate::xlsx_metadata::hidden_rows(path)?
+    } else {
+        Default::default()
+    };
     let mut workbook = open_workbook_auto(path)
         .map_err(|error| format!("could not open workbook '{}': {error}", path.display()))?;
     let available = workbook.sheet_names().to_vec();
@@ -102,12 +122,10 @@ fn load_xlsx(path: &Path, requested_sheet: Option<&str>) -> Result<Vec<Table>, S
             let rows = range
                 .rows()
                 .enumerate()
-                .filter(|(index, _)| {
-                    let number = start_row as usize + index + 1;
-                    hidden.is_none_or(|rows| !rows.contains(&number))
-                })
                 .map(|(index, row)| SourceRow {
                     number: start_row as usize + index + 1,
+                    hidden: hidden
+                        .is_some_and(|rows| rows.contains(&(start_row as usize + index + 1))),
                     cells: row.iter().map(cell_from_excel).collect(),
                 })
                 .collect();

@@ -15,6 +15,7 @@ pub struct Document {
 pub struct SourceMetadata {
     pub file_name: String,
     pub format: String,
+    pub row_visibility: &'static str,
     pub sheets: Vec<SheetMetadata>,
 }
 
@@ -28,6 +29,7 @@ pub struct SheetMetadata {
 #[derive(Debug, Serialize)]
 pub struct Summary {
     pub total_records: usize,
+    pub hidden_records_excluded: usize,
     pub status_counts: BTreeMap<String, usize>,
     pub severity_counts: BTreeMap<String, usize>,
 }

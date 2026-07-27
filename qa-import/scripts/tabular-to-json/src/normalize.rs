@@ -200,23 +200,19 @@ pub fn evidence_urls(values: impl Iterator<Item = String>) -> Vec<String> {
     let mut seen = HashSet::new();
     for value in values {
         let mut search_from = 0;
-        let mut chained_start = None;
-        while let Some(start) = chained_start
-            .take()
-            .or_else(|| find_scheme_start(&value, search_from))
-        {
-            let (end, next_scheme) = url_candidate_end(&value, start);
+        while let Some(start) = find_scheme_start(&value, search_from) {
+            let end = url_candidate_end(&value, start);
             let candidate = trim_url_punctuation(&value[start..end]);
             if let Ok(parsed) = Url::parse(candidate) {
+                let canonical = parsed.to_string();
                 if matches!(parsed.scheme(), "http" | "https")
                     && parsed.host_str().is_some_and(|host| !host.is_empty())
-                    && seen.insert(parsed.to_string())
+                    && seen.insert(canonical.clone())
                 {
-                    result.push(candidate.to_string());
+                    result.push(canonical);
                 }
             }
             search_from = end.max(start + 1);
-            chained_start = next_scheme;
         }
     }
     result
@@ -255,22 +251,25 @@ fn scheme_length_at(value: &str, index: usize) -> Option<usize> {
     }
 }
 
-fn url_candidate_end(value: &str, start: usize) -> (usize, Option<usize>) {
+fn url_candidate_end(value: &str, start: usize) -> usize {
     let mut index = start + scheme_length_at(value, start).expect("candidate starts with a scheme");
     while index < value.len() {
-        if scheme_length_at(value, index).is_some() {
-            return (index, Some(index));
-        }
         let character = value[index..]
             .chars()
             .next()
             .expect("index is within the string");
         if character.is_whitespace() || matches!(character, '"' | '\'' | '<' | '>' | '`') {
-            return (index, None);
+            return index;
+        }
+        if matches!(character, ',' | ';') {
+            let next = index + character.len_utf8();
+            if scheme_length_at(value, next).is_some() {
+                return index;
+            }
         }
         index += character.len_utf8();
     }
-    (value.len(), None)
+    value.len()
 }
 
 fn trim_url_punctuation(mut candidate: &str) -> &str {
@@ -361,7 +360,7 @@ mod tests {
     #[test]
     fn extracts_distinct_urls_with_balanced_delimiters_and_adjacent_schemes() {
         let urls = evidence_urls(
-            ["See (https://en.wikipedia.org/wiki/Function_(mathematics)), https://a.test/x,https://b.test/y;HTTP://C.test/z https://d.test/onehttps://e.test/two [https://wrap.test/x].".to_string()].into_iter(),
+            ["See (https://en.wikipedia.org/wiki/Function_(mathematics)), https://a.test/x,https://b.test/y;HTTP://C.test/z https://d.test/one,https://e.test/two [https://wrap.test/x].".to_string()].into_iter(),
         );
         assert_eq!(
             urls,
@@ -369,7 +368,7 @@ mod tests {
                 "https://en.wikipedia.org/wiki/Function_(mathematics)",
                 "https://a.test/x",
                 "https://b.test/y",
-                "HTTP://C.test/z",
+                "http://c.test/z",
                 "https://d.test/one",
                 "https://e.test/two",
                 "https://wrap.test/x",

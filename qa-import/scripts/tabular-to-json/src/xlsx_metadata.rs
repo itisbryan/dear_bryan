@@ -87,19 +87,37 @@ fn relationship_targets(xml: &[u8]) -> Result<HashMap<String, String>, String> {
 fn worksheet_hidden_rows(xml: &[u8]) -> Result<HashSet<usize>, String> {
     let mut reader = Reader::from_reader(xml);
     let mut rows = HashSet::new();
+    let mut next_number = 1;
+    let mut current: Option<(bool, Option<usize>, usize)> = None;
     loop {
         match reader.read_event() {
-            Ok(Event::Empty(element)) | Ok(Event::Start(element))
-                if element.local_name().as_ref() == b"row" =>
+            Ok(Event::Start(element)) if element.local_name().as_ref() == b"row" => {
+                let hidden = row_is_hidden(&reader, &element)?;
+                let number = row_number(&reader, &element)?;
+                current = Some((hidden, number, next_number));
+            }
+            Ok(Event::Empty(element)) if element.local_name().as_ref() == b"row" => {
+                let hidden = row_is_hidden(&reader, &element)?;
+                let number = row_number(&reader, &element)?.unwrap_or(next_number);
+                finish_row(&mut rows, &mut next_number, hidden, number);
+            }
+            Ok(Event::Start(element)) | Ok(Event::Empty(element))
+                if element.local_name().as_ref() == b"c" =>
             {
-                let hidden = attribute(&reader, &element, b"hidden")?
-                    .is_some_and(|value| matches!(value.as_str(), "1" | "true"));
-                if hidden {
-                    let number = attribute(&reader, &element, b"r")?
-                        .ok_or_else(|| "hidden XLSX row is missing its number".to_string())?
-                        .parse::<usize>()
-                        .map_err(|error| format!("invalid hidden XLSX row number: {error}"))?;
-                    rows.insert(number);
+                if let Some((_, number @ None, _)) = current.as_mut() {
+                    if let Some(reference) = attribute(&reader, &element, b"r")? {
+                        *number = cell_row_number(&reference);
+                    }
+                }
+            }
+            Ok(Event::End(element)) if element.local_name().as_ref() == b"row" => {
+                if let Some((hidden, number, fallback)) = current.take() {
+                    finish_row(
+                        &mut rows,
+                        &mut next_number,
+                        hidden,
+                        number.unwrap_or(fallback),
+                    );
                 }
             }
             Ok(Event::Eof) => return Ok(rows),
@@ -107,6 +125,41 @@ fn worksheet_hidden_rows(xml: &[u8]) -> Result<HashSet<usize>, String> {
             Err(error) => return Err(format!("could not parse XLSX row metadata: {error}")),
         }
     }
+}
+
+fn row_is_hidden(reader: &Reader<&[u8]>, element: &BytesStart<'_>) -> Result<bool, String> {
+    Ok(attribute(reader, element, b"hidden")?
+        .is_some_and(|value| matches!(value.as_str(), "1" | "true")))
+}
+
+fn row_number(reader: &Reader<&[u8]>, element: &BytesStart<'_>) -> Result<Option<usize>, String> {
+    attribute(reader, element, b"r")?
+        .map(|value| {
+            value
+                .parse::<usize>()
+                .map_err(|error| format!("invalid XLSX row number: {error}"))
+                .and_then(|number| {
+                    (number > 0)
+                        .then_some(number)
+                        .ok_or_else(|| "invalid XLSX row number: must be at least 1".to_string())
+                })
+        })
+        .transpose()
+}
+
+fn cell_row_number(reference: &str) -> Option<usize> {
+    let digits = reference.trim_start_matches(|character: char| character.is_ascii_alphabetic());
+    (!digits.is_empty() && digits.chars().all(|character| character.is_ascii_digit()))
+        .then(|| digits.parse().ok())
+        .flatten()
+        .filter(|number| *number > 0)
+}
+
+fn finish_row(rows: &mut HashSet<usize>, next_number: &mut usize, hidden: bool, number: usize) {
+    if hidden {
+        rows.insert(number);
+    }
+    *next_number = number.saturating_add(1);
 }
 
 fn attribute(
@@ -143,4 +196,20 @@ fn resolve_workbook_target(target: &str) -> String {
         }
     }
     parts.join("/")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hidden_rows_infer_missing_numbers_from_cells_or_document_order() {
+        let xml = br#"<worksheet><sheetData>
+            <row r="2"><c r="A2"/></row>
+            <row hidden="1"><c r="C5"/></row>
+            <row hidden="true"><c/></row>
+        </sheetData></worksheet>"#;
+
+        assert_eq!(worksheet_hidden_rows(xml).unwrap(), HashSet::from([5, 6]));
+    }
 }

@@ -14,26 +14,29 @@ use std::path::Path;
 pub struct Options<'a> {
     pub sheet: Option<&'a str>,
     pub header_row: Option<usize>,
+    pub visible_only: bool,
 }
 
 pub fn convert(path: &Path, options: Options<'_>) -> Result<Document, String> {
     if options.header_row == Some(0) {
         return Err("--header is 1-based and must be at least 1".to_string());
     }
-    let (format, tables) = input::load(path, options.sheet)?;
+    let (format, tables) = input::load(path, options.sheet, options.visible_only)?;
     let mut records = Vec::new();
     let mut sheet_metadata = Vec::new();
     let mut errors = Vec::new();
+    let mut hidden_records_excluded = 0;
 
     for table in tables {
-        match import_table(&table, options.header_row) {
-            Ok((header_row, mut imported)) => {
+        match import_table(&table, options.header_row, options.visible_only) {
+            Ok((header_row, mut imported, excluded)) => {
                 sheet_metadata.push(SheetMetadata {
                     name: table.sheet.clone(),
                     header_row,
                     record_count: imported.len(),
                 });
                 records.append(&mut imported);
+                hidden_records_excluded += excluded;
             }
             Err(error) => errors.push(error),
         }
@@ -62,10 +65,16 @@ pub fn convert(path: &Path, options: Options<'_>) -> Result<Document, String> {
         source: SourceMetadata {
             file_name,
             format,
+            row_visibility: if options.visible_only {
+                "visible_only"
+            } else {
+                "all_rows"
+            },
             sheets: sheet_metadata,
         },
         summary: Summary {
             total_records: records.len(),
+            hidden_records_excluded,
             status_counts,
             severity_counts,
         },
@@ -76,7 +85,8 @@ pub fn convert(path: &Path, options: Options<'_>) -> Result<Document, String> {
 fn import_table(
     table: &Table,
     requested_header: Option<usize>,
-) -> Result<(usize, Vec<Record>), String> {
+    visible_only: bool,
+) -> Result<(usize, Vec<Record>, usize), String> {
     let header_index = if let Some(number) = requested_header {
         table
             .rows
@@ -100,12 +110,17 @@ fn import_table(
         .collect::<Vec<_>>();
     let id_column_present = fields.contains(&Some(Field::Id));
     let mut records = Vec::new();
+    let mut hidden_records_excluded = 0;
     for row in table.rows.iter().skip(header_index + 1) {
         if is_record_row(row, &fields, id_column_present) {
-            records.push(build_record(table, row, &headers, &fields));
+            if visible_only && row.hidden {
+                hidden_records_excluded += 1;
+            } else {
+                records.push(build_record(table, row, &headers, &fields));
+            }
         }
     }
-    Ok((header_row.number, records))
+    Ok((header_row.number, records, hidden_records_excluded))
 }
 
 fn detect_header(table: &Table) -> Option<usize> {

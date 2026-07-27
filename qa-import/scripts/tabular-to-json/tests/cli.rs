@@ -55,6 +55,7 @@ fn imports_csv_with_detected_header_and_lossless_fields() {
     );
     let json: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(json["schema_version"], "qa-import/v1");
+    assert_eq!(json["source"]["row_visibility"], "all_rows");
     assert_eq!(json["source"]["sheets"][0]["header_row"], 2);
     assert_eq!(json["summary"]["total_records"], 1);
     assert_eq!(json["summary"]["status_counts"]["Fail"], 1);
@@ -131,7 +132,7 @@ fn extracts_only_valid_http_urls_case_insensitively_and_stably_deduplicates() {
     let input = dir.path().join("urls.csv");
     fs::write(
         &input,
-        "Title,Status,Evidence\nBug,Fail,\"See (https://en.wikipedia.org/wiki/Function_(mathematics)), HTTPS://Example.test/a,https://two.test/b;http://three.test/c. https://four.test/xhttps://five.test/y [https://wrap.test/p?q=a%2Cb&x=✓]. https://example.test/a http:// https://:443/no https://example.test:bad/path ftp://example.test/no\"\n",
+        "Title,Status,Evidence\nBug,Fail,\"See (https://en.wikipedia.org/wiki/Function_(mathematics)), HTTPS://Example.test/a,https://two.test/b;http://three.test/c. https://outer.test/go?next=https://inner.test/path&label=ok https://paths.test/proxy/https://upstream.test/v1 [https://wrap.test/p?q=a%2Cb&x=✓]. https://example.test/a http:// https://:443/no https://example.test:bad/path ftp://example.test/no\"\n",
     )
     .unwrap();
 
@@ -146,12 +147,12 @@ fn extracts_only_valid_http_urls_case_insensitively_and_stably_deduplicates() {
         json["records"][0]["evidence_urls"],
         serde_json::json!([
             "https://en.wikipedia.org/wiki/Function_(mathematics)",
-            "HTTPS://Example.test/a",
+            "https://example.test/a",
             "https://two.test/b",
             "http://three.test/c",
-            "https://four.test/x",
-            "https://five.test/y",
-            "https://wrap.test/p?q=a%2Cb&x=✓"
+            "https://outer.test/go?next=https://inner.test/path&label=ok",
+            "https://paths.test/proxy/https://upstream.test/v1",
+            "https://wrap.test/p?q=a%2Cb&x=%E2%9C%93"
         ])
     );
 }
@@ -273,7 +274,7 @@ fn xlsx_retains_blank_ids_skips_styled_empty_rows_and_renders_numeric_ids() {
 }
 
 #[test]
-fn xlsx_retains_unclassified_blank_id_rows_with_substantive_qa_content() {
+fn xlsx_visibility_is_lossless_by_default_and_explicit_when_filtered() {
     let dir = TestDir::new();
     let input = dir.path().join("unclassified.xlsx");
     let mut workbook = Workbook::new();
@@ -312,8 +313,9 @@ fn xlsx_retains_unclassified_blank_id_rows_with_substantive_qa_content() {
     }
     sheet.write_string(2, 1, "Comment row").unwrap();
     sheet.write_string(2, 8, "not an independent case").unwrap();
-    sheet.write_string(3, 1, "Hidden draft").unwrap();
-    sheet.write_string(3, 3, "Should not be imported").unwrap();
+    sheet.write_string(3, 1, "Filtered draft").unwrap();
+    sheet.write_string(3, 3, "Review hidden record").unwrap();
+    sheet.autofilter(0, 0, 3, 8).unwrap();
     sheet.set_row_hidden(3).unwrap();
     workbook.save(&input).unwrap();
 
@@ -324,13 +326,28 @@ fn xlsx_retains_unclassified_blank_id_rows_with_substantive_qa_content() {
         String::from_utf8_lossy(&output.stderr)
     );
     let json: Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(json["summary"]["total_records"], 1);
+    assert_eq!(json["source"]["row_visibility"], "all_rows");
+    assert_eq!(json["summary"]["total_records"], 2);
+    assert_eq!(json["summary"]["hidden_records_excluded"], 0);
     assert!(json["records"][0]["id"].is_null());
     assert!(json["records"][0]["status"].is_null());
     assert_eq!(json["records"][0]["title"], "Search loses filters");
     assert_eq!(json["records"][0]["steps_raw"], "Search for an item");
     assert_eq!(json["records"][0]["expected"], "Filters remain");
     assert_eq!(json["records"][0]["observed"], "Filters reset");
+    assert_eq!(json["records"][1]["title"], "Filtered draft");
+
+    let output = run(&input, &["--visible-only"]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(json["source"]["row_visibility"], "visible_only");
+    assert_eq!(json["summary"]["total_records"], 1);
+    assert_eq!(json["summary"]["hidden_records_excluded"], 1);
+    assert_eq!(json["records"][0]["title"], "Search loses filters");
 }
 
 #[test]

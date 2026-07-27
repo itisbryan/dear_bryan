@@ -29,6 +29,10 @@ struct Cli {
     /// Emit compact JSON instead of pretty JSON
     #[arg(long)]
     compact: bool,
+
+    /// Exclude manually hidden and filter-hidden XLSX rows
+    #[arg(long)]
+    visible_only: bool,
 }
 
 fn main() {
@@ -44,6 +48,7 @@ fn run(cli: Cli) -> Result<(), String> {
         Options {
             sheet: cli.sheet.as_deref(),
             header_row: cli.header,
+            visible_only: cli.visible_only,
         },
     )?;
     let mut json = if cli.compact {

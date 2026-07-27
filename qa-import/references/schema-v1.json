@@ -28,10 +28,11 @@
     "sourceMetadata": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["file_name", "format", "sheets"],
+      "required": ["file_name", "format", "row_visibility", "sheets"],
       "properties": {
         "file_name": { "type": "string", "description": "Input basename; directory paths are omitted for deterministic, portable output." },
         "format": { "enum": ["csv", "xlsx"] },
+        "row_visibility": { "enum": ["all_rows", "visible_only"], "description": "Whether hidden XLSX rows were eligible for import. CSV is always all_rows." },
         "sheets": {
           "type": "array",
           "minItems": 1,
@@ -51,9 +52,10 @@
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["total_records", "status_counts", "severity_counts"],
+      "required": ["total_records", "hidden_records_excluded", "status_counts", "severity_counts"],
       "properties": {
         "total_records": { "type": "integer", "minimum": 0 },
+        "hidden_records_excluded": { "type": "integer", "minimum": 0, "description": "Meaningful records omitted by the explicit visible_only policy; zero for all_rows." },
         "status_counts": { "$ref": "#/$defs/counts" },
         "severity_counts": { "$ref": "#/$defs/counts" }
       }
@@ -87,7 +89,7 @@
         "environment": { "$ref": "#/$defs/nullableString" },
         "date": { "type": ["string", "null"], "format": "date" },
         "notes": { "$ref": "#/$defs/nullableString" },
-        "evidence_urls": { "type": "array", "items": { "type": "string", "format": "uri", "pattern": "^[hH][tT][tT][pP][sS]?://" } },
+        "evidence_urls": { "type": "array", "items": { "type": "string", "format": "uri", "pattern": "^https?://", "description": "Canonical RFC 3986-compatible HTTP(S) URI serialized by the URL parser." } },
         "category": { "enum": ["Functional", "Visual", "Accessibility", "Console", "UX", "Content", null] },
         "confirmation": { "const": "unconfirmed", "description": "Import does not prove current reproducibility." },
         "extra_fields": { "$ref": "#/$defs/stringMap", "description": "Non-empty values from unmapped columns." },
