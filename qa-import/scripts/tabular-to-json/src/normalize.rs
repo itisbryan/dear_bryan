@@ -202,7 +202,7 @@ pub fn evidence_urls(values: impl Iterator<Item = String>) -> Vec<String> {
         let mut search_from = 0;
         while let Some((start, wrapper)) = find_scheme_start(&value, search_from) {
             let end = url_candidate_end(&value, start);
-            let candidate = trim_url_token_edge(&value[start..end], wrapper);
+            let candidate = strip_external_closing_wrapper(&value[start..end], wrapper);
             if let Some(canonical) = canonical_http_uri(candidate) {
                 if seen.insert(canonical.clone()) {
                     result.push(canonical);
@@ -279,14 +279,7 @@ fn url_candidate_end(value: &str, start: usize) -> usize {
     value.len()
 }
 
-fn trim_url_token_edge(mut candidate: &str, wrapper: Option<char>) -> &str {
-    while candidate
-        .chars()
-        .next_back()
-        .is_some_and(|last| matches!(last, ',' | '.' | ';' | ':' | '!' | '?'))
-    {
-        candidate = &candidate[..candidate.len() - 1];
-    }
+fn strip_external_closing_wrapper(mut candidate: &str, wrapper: Option<char>) -> &str {
     if let Some(closer) = wrapper.and_then(matching_closer) {
         if candidate.ends_with(closer) {
             candidate = &candidate[..candidate.len() - closer.len_utf8()];
@@ -309,7 +302,10 @@ fn matching_closer(opener: char) -> Option<char> {
 }
 
 fn canonical_http_uri(candidate: &str) -> Option<String> {
-    if candidate.contains('|') || !has_valid_percent_escapes(candidate) {
+    if has_forbidden_raw_uri_input(candidate)
+        || candidate.contains('|')
+        || !has_valid_percent_escapes(candidate)
+    {
         return None;
     }
     let parsed = Url::parse(candidate).ok()?;
@@ -321,6 +317,14 @@ fn canonical_http_uri(candidate: &str) -> Option<String> {
     let canonical = parsed.to_string();
     (is_rfc3986_serialization(&canonical) && has_only_ipv6_host_brackets(&parsed, &canonical))
         .then_some(canonical)
+}
+
+fn has_forbidden_raw_uri_input(candidate: &str) -> bool {
+    candidate.contains('\\')
+        || candidate
+            .bytes()
+            .any(|byte| byte == b' ' || byte.is_ascii_control())
+        || candidate.bytes().filter(|byte| *byte == b'#').count() > 1
 }
 
 fn has_valid_percent_escapes(value: &str) -> bool {
@@ -454,9 +458,9 @@ mod tests {
     }
 
     #[test]
-    fn preserves_punctuation_concatenated_schemes_and_trims_true_wrappers() {
+    fn preserves_punctuation_concatenated_schemes_and_strips_true_wrappers() {
         let urls = evidence_urls(
-            ["See (https://en.wikipedia.org/wiki/Function_(mathematics)), https://a.test/x,https://b.test/y;HTTP://C.test/z https://d.test/one,https://e.test/two [https://wrap.test/x].".to_string()].into_iter(),
+            ["See (https://en.wikipedia.org/wiki/Function_(mathematics)) https://a.test/x,https://b.test/y;HTTP://C.test/z https://d.test/one,https://e.test/two [https://wrap.test/x]".to_string()].into_iter(),
         );
         assert_eq!(
             urls,
@@ -467,5 +471,17 @@ mod tests {
                 "https://wrap.test/x",
             ]
         );
+    }
+
+    #[test]
+    fn rejects_raw_input_that_whatwg_would_rewrite() {
+        for candidate in [
+            "https://bad.test/a b",
+            "https://bad.test/a\\b",
+            "https://bad.test/a\0b",
+            "https://bad.test/a#one#two",
+        ] {
+            assert_eq!(canonical_http_uri(candidate), None, "{candidate:?}");
+        }
     }
 }

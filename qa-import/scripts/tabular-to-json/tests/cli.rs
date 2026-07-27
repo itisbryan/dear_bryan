@@ -182,6 +182,42 @@ fn emits_canonical_rfc3986_http_uris_and_skips_malformed_candidates() {
 }
 
 #[test]
+fn preserves_uri_punctuation_and_rejects_whatwg_rewrites() {
+    let dir = TestDir::new();
+    let input = dir.path().join("uri-edges.csv");
+    fs::write(
+        &input,
+        "Title,Status,Evidence\nBug,Fail,\"(https://wrap.test/proof) [https://wrap.test/other] https://terminal.test/comma, https://terminal.test/semicolon; https://terminal.test/colon: https://terminal.test/bang! https://terminal.test/question? https://terminal.test/period. https://outer.test/go?next=https://inner.test/a; https://outer.test/go?next=https://inner.test/a? https://balanced.test/a(b) (https://en.wikipedia.org/wiki/Function_(mathematics)) https://bad.test/a#one#two https://bad.test\\rewritten\"\n",
+    )
+    .unwrap();
+
+    let output = run(&input, &[]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        json["records"][0]["evidence_urls"],
+        serde_json::json!([
+            "https://wrap.test/proof",
+            "https://wrap.test/other",
+            "https://terminal.test/comma,",
+            "https://terminal.test/semicolon;",
+            "https://terminal.test/colon:",
+            "https://terminal.test/bang!",
+            "https://terminal.test/question?",
+            "https://terminal.test/period.",
+            "https://outer.test/go?next=https://inner.test/a;",
+            "https://outer.test/go?next=https://inner.test/a?",
+            "https://balanced.test/a(b)",
+            "https://en.wikipedia.org/wiki/Function_(mathematics)"
+        ])
+    );
+}
+
+#[test]
 fn imports_generated_xlsx_and_honors_sheet_header_and_output_flags() {
     let dir = TestDir::new();
     let input = dir.path().join("qa.xlsx");
