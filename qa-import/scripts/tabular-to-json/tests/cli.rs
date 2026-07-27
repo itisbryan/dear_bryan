@@ -127,12 +127,12 @@ fn csv_retains_unclassified_blank_id_rows_with_substantive_qa_content() {
 }
 
 #[test]
-fn extracts_only_valid_http_urls_case_insensitively_and_stably_deduplicates() {
+fn preserves_nested_and_punctuation_concatenated_urls_as_single_candidates() {
     let dir = TestDir::new();
-    let input = dir.path().join("urls.csv");
+    let input = dir.path().join("nested-urls.csv");
     fs::write(
         &input,
-        "Title,Status,Evidence\nBug,Fail,\"See (https://en.wikipedia.org/wiki/Function_(mathematics)), HTTPS://Example.test/a,https://two.test/b;http://three.test/c. https://outer.test/go?next=https://inner.test/path&label=ok https://paths.test/proxy/https://upstream.test/v1 [https://wrap.test/p?q=a%2Cb&x=✓]. https://example.test/a http:// https://:443/no https://example.test:bad/path ftp://example.test/no\"\n",
+        "Title,Status,Evidence\nBug,Fail,\"(https://outer.test/go?targets=https://inner.test/a,https://inner.test/b;https://inner.test/c) [https://outer.test/proxy/https://inner.test/a,https://inner.test/b;https://inner.test/c/end] https://outer.test/page#targets=https://inner.test/a,https://inner.test/b;https://inner.test/c prefix(https://ignored.test/no) https://first.test/a,https://second.test/b\"\n",
     )
     .unwrap();
 
@@ -146,13 +146,37 @@ fn extracts_only_valid_http_urls_case_insensitively_and_stably_deduplicates() {
     assert_eq!(
         json["records"][0]["evidence_urls"],
         serde_json::json!([
-            "https://en.wikipedia.org/wiki/Function_(mathematics)",
-            "https://example.test/a",
-            "https://two.test/b",
-            "http://three.test/c",
-            "https://outer.test/go?next=https://inner.test/path&label=ok",
-            "https://paths.test/proxy/https://upstream.test/v1",
-            "https://wrap.test/p?q=a%2Cb&x=%E2%9C%93"
+            "https://outer.test/go?targets=https://inner.test/a,https://inner.test/b;https://inner.test/c",
+            "https://outer.test/proxy/https://inner.test/a,https://inner.test/b;https://inner.test/c/end",
+            "https://outer.test/page#targets=https://inner.test/a,https://inner.test/b;https://inner.test/c",
+            "https://first.test/a,https://second.test/b"
+        ])
+    );
+}
+
+#[test]
+fn emits_canonical_rfc3986_http_uris_and_skips_malformed_candidates() {
+    let dir = TestDir::new();
+    let input = dir.path().join("validated-urls.csv");
+    fs::write(
+        &input,
+        "Title,Status,Evidence\nBug,Fail,\"<https://[2001:db8::1]/proof> https://例え.テスト/雪?q=✓ https://valid.test/a%2Fb?q=%7E https://bad.test/%ZZ https://bad.test/% https://bad.test/a|b https://bad.test/a[b https://bad.test/a]b\"\n",
+    )
+    .unwrap();
+
+    let output = run(&input, &[]);
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let json: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(
+        json["records"][0]["evidence_urls"],
+        serde_json::json!([
+            "https://[2001:db8::1]/proof",
+            "https://xn--r8jz45g.xn--zckzah/%E9%9B%AA?q=%E2%9C%93",
+            "https://valid.test/a%2Fb?q=%7E"
         ])
     );
 }

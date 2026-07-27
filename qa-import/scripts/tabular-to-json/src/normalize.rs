@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 use std::collections::HashSet;
-use url::Url;
+use url::{Host, Url};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Field {
@@ -200,15 +200,11 @@ pub fn evidence_urls(values: impl Iterator<Item = String>) -> Vec<String> {
     let mut seen = HashSet::new();
     for value in values {
         let mut search_from = 0;
-        while let Some(start) = find_scheme_start(&value, search_from) {
+        while let Some((start, wrapper)) = find_scheme_start(&value, search_from) {
             let end = url_candidate_end(&value, start);
-            let candidate = trim_url_punctuation(&value[start..end]);
-            if let Ok(parsed) = Url::parse(candidate) {
-                let canonical = parsed.to_string();
-                if matches!(parsed.scheme(), "http" | "https")
-                    && parsed.host_str().is_some_and(|host| !host.is_empty())
-                    && seen.insert(canonical.clone())
-                {
+            let candidate = trim_url_token_edge(&value[start..end], wrapper);
+            if let Some(canonical) = canonical_http_uri(candidate) {
+                if seen.insert(canonical.clone()) {
                     result.push(canonical);
                 }
             }
@@ -218,18 +214,35 @@ pub fn evidence_urls(values: impl Iterator<Item = String>) -> Vec<String> {
     result
 }
 
-fn find_scheme_start(value: &str, from: usize) -> Option<usize> {
+fn find_scheme_start(value: &str, from: usize) -> Option<(usize, Option<char>)> {
     let mut index = from;
     while index < value.len() {
-        if scheme_length_at(value, index).is_some()
-            && value[..index]
-                .chars()
-                .next_back()
-                .is_none_or(|character| !character.is_alphanumeric() && character != '_')
-        {
-            return Some(index);
+        if scheme_length_at(value, index).is_some() {
+            if let Some(wrapper) = start_boundary_wrapper(value, index) {
+                return Some((index, wrapper));
+            }
         }
         index += value[index..].chars().next()?.len_utf8();
+    }
+    None
+}
+
+fn start_boundary_wrapper(value: &str, index: usize) -> Option<Option<char>> {
+    if index == 0 {
+        return Some(None);
+    }
+    let (previous_index, previous) = value[..index].char_indices().next_back()?;
+    if previous.is_whitespace() {
+        return Some(None);
+    }
+    if matching_closer(previous).is_some()
+        && (previous_index == 0
+            || value[..previous_index]
+                .chars()
+                .next_back()
+                .is_some_and(char::is_whitespace))
+    {
+        return Some(Some(previous));
     }
     None
 }
@@ -258,48 +271,131 @@ fn url_candidate_end(value: &str, start: usize) -> usize {
             .chars()
             .next()
             .expect("index is within the string");
-        if character.is_whitespace() || matches!(character, '"' | '\'' | '<' | '>' | '`') {
+        if character.is_whitespace() {
             return index;
-        }
-        if matches!(character, ',' | ';') {
-            let next = index + character.len_utf8();
-            if scheme_length_at(value, next).is_some() {
-                return index;
-            }
         }
         index += character.len_utf8();
     }
     value.len()
 }
 
-fn trim_url_punctuation(mut candidate: &str) -> &str {
-    loop {
-        let Some(last) = candidate.chars().next_back() else {
-            return candidate;
-        };
-        let should_trim = matches!(last, ',' | '.' | ';' | ':' | '!' | '?')
-            || match last {
-                ')' => has_unmatched_closer(candidate, '(', ')'),
-                ']' => has_unmatched_closer(candidate, '[', ']'),
-                '}' => has_unmatched_closer(candidate, '{', '}'),
-                _ => false,
-            };
-        if !should_trim {
-            return candidate;
+fn trim_url_token_edge(mut candidate: &str, wrapper: Option<char>) -> &str {
+    while candidate
+        .chars()
+        .next_back()
+        .is_some_and(|last| matches!(last, ',' | '.' | ';' | ':' | '!' | '?'))
+    {
+        candidate = &candidate[..candidate.len() - 1];
+    }
+    if let Some(closer) = wrapper.and_then(matching_closer) {
+        if candidate.ends_with(closer) {
+            candidate = &candidate[..candidate.len() - closer.len_utf8()];
         }
-        candidate = &candidate[..candidate.len() - last.len_utf8()];
+    }
+    candidate
+}
+
+fn matching_closer(opener: char) -> Option<char> {
+    match opener {
+        '(' => Some(')'),
+        '[' => Some(']'),
+        '{' => Some('}'),
+        '<' => Some('>'),
+        '"' => Some('"'),
+        '\'' => Some('\''),
+        '`' => Some('`'),
+        _ => None,
     }
 }
 
-fn has_unmatched_closer(value: &str, opener: char, closer: char) -> bool {
-    value
-        .chars()
-        .filter(|character| *character == closer)
-        .count()
-        > value
-            .chars()
-            .filter(|character| *character == opener)
-            .count()
+fn canonical_http_uri(candidate: &str) -> Option<String> {
+    if candidate.contains('|') || !has_valid_percent_escapes(candidate) {
+        return None;
+    }
+    let parsed = Url::parse(candidate).ok()?;
+    if !matches!(parsed.scheme(), "http" | "https")
+        || parsed.host_str().is_none_or(|host| host.is_empty())
+    {
+        return None;
+    }
+    let canonical = parsed.to_string();
+    (is_rfc3986_serialization(&canonical) && has_only_ipv6_host_brackets(&parsed, &canonical))
+        .then_some(canonical)
+}
+
+fn has_valid_percent_escapes(value: &str) -> bool {
+    let bytes = value.as_bytes();
+    let mut index = 0;
+    while index < bytes.len() {
+        if bytes[index] == b'%' {
+            if index + 2 >= bytes.len()
+                || !bytes[index + 1].is_ascii_hexdigit()
+                || !bytes[index + 2].is_ascii_hexdigit()
+            {
+                return false;
+            }
+            index += 3;
+        } else {
+            index += 1;
+        }
+    }
+    true
+}
+
+fn is_rfc3986_serialization(value: &str) -> bool {
+    let bytes = value.as_bytes();
+    let mut index = 0;
+    while index < bytes.len() {
+        let byte = bytes[index];
+        if byte == b'%' {
+            if index + 2 >= bytes.len()
+                || !bytes[index + 1].is_ascii_hexdigit()
+                || !bytes[index + 2].is_ascii_hexdigit()
+            {
+                return false;
+            }
+            index += 3;
+        } else if byte.is_ascii_alphanumeric()
+            || matches!(
+                byte,
+                b'-' | b'.'
+                    | b'_'
+                    | b'~'
+                    | b':'
+                    | b'/'
+                    | b'?'
+                    | b'#'
+                    | b'['
+                    | b']'
+                    | b'@'
+                    | b'!'
+                    | b'$'
+                    | b'&'
+                    | b'\''
+                    | b'('
+                    | b')'
+                    | b'*'
+                    | b'+'
+                    | b','
+                    | b';'
+                    | b'='
+            )
+        {
+            index += 1;
+        } else {
+            return false;
+        }
+    }
+    true
+}
+
+fn has_only_ipv6_host_brackets(parsed: &Url, canonical: &str) -> bool {
+    let opening = canonical.bytes().filter(|byte| *byte == b'[').count();
+    let closing = canonical.bytes().filter(|byte| *byte == b']').count();
+    match parsed.host() {
+        Some(Host::Ipv6(_)) => opening == 1 && closing == 1,
+        _ => opening == 0 && closing == 0,
+    }
 }
 
 fn numbered_step(line: &str) -> Option<&str> {
@@ -358,7 +454,7 @@ mod tests {
     }
 
     #[test]
-    fn extracts_distinct_urls_with_balanced_delimiters_and_adjacent_schemes() {
+    fn preserves_punctuation_concatenated_schemes_and_trims_true_wrappers() {
         let urls = evidence_urls(
             ["See (https://en.wikipedia.org/wiki/Function_(mathematics)), https://a.test/x,https://b.test/y;HTTP://C.test/z https://d.test/one,https://e.test/two [https://wrap.test/x].".to_string()].into_iter(),
         );
@@ -366,11 +462,8 @@ mod tests {
             urls,
             [
                 "https://en.wikipedia.org/wiki/Function_(mathematics)",
-                "https://a.test/x",
-                "https://b.test/y",
-                "http://c.test/z",
-                "https://d.test/one",
-                "https://e.test/two",
+                "https://a.test/x,https://b.test/y;HTTP://C.test/z",
+                "https://d.test/one,https://e.test/two",
                 "https://wrap.test/x",
             ]
         );
