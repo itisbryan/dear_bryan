@@ -199,40 +199,14 @@ pub fn evidence_urls(values: impl Iterator<Item = String>) -> Vec<String> {
     let mut result = Vec::new();
     let mut seen = HashSet::new();
     for value in values {
-        let mut index = 0;
-        while index < value.len() {
-            let tail = &value[index..];
-            let scheme_length = if tail
-                .get(..8)
-                .is_some_and(|scheme| scheme.eq_ignore_ascii_case("https://"))
-            {
-                Some(8)
-            } else if tail
-                .get(..7)
-                .is_some_and(|scheme| scheme.eq_ignore_ascii_case("http://"))
-            {
-                Some(7)
-            } else {
-                None
-            };
-            let Some(scheme_length) = scheme_length else {
-                index += tail.chars().next().map_or(1, char::len_utf8);
-                continue;
-            };
-            if value[..index]
-                .chars()
-                .next_back()
-                .is_some_and(|character| character.is_ascii_alphanumeric())
-            {
-                index += scheme_length;
-                continue;
-            }
-            let start = index;
-            let end = value[start..]
-                .find(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '<' | '>' | '`'))
-                .map_or(value.len(), |length| start + length);
-            let candidate =
-                value[start..end].trim_end_matches([',', '.', ';', ':', '!', '?', ')', ']', '}']);
+        let mut search_from = 0;
+        let mut chained_start = None;
+        while let Some(start) = chained_start
+            .take()
+            .or_else(|| find_scheme_start(&value, search_from))
+        {
+            let (end, next_scheme) = url_candidate_end(&value, start);
+            let candidate = trim_url_punctuation(&value[start..end]);
             if let Ok(parsed) = Url::parse(candidate) {
                 if matches!(parsed.scheme(), "http" | "https")
                     && parsed.host_str().is_some_and(|host| !host.is_empty())
@@ -241,10 +215,92 @@ pub fn evidence_urls(values: impl Iterator<Item = String>) -> Vec<String> {
                     result.push(candidate.to_string());
                 }
             }
-            index = end.max(start + 1);
+            search_from = end.max(start + 1);
+            chained_start = next_scheme;
         }
     }
     result
+}
+
+fn find_scheme_start(value: &str, from: usize) -> Option<usize> {
+    let mut index = from;
+    while index < value.len() {
+        if scheme_length_at(value, index).is_some()
+            && value[..index]
+                .chars()
+                .next_back()
+                .is_none_or(|character| !character.is_alphanumeric() && character != '_')
+        {
+            return Some(index);
+        }
+        index += value[index..].chars().next()?.len_utf8();
+    }
+    None
+}
+
+fn scheme_length_at(value: &str, index: usize) -> Option<usize> {
+    let tail = value.get(index..)?;
+    if tail
+        .get(..8)
+        .is_some_and(|scheme| scheme.eq_ignore_ascii_case("https://"))
+    {
+        Some(8)
+    } else if tail
+        .get(..7)
+        .is_some_and(|scheme| scheme.eq_ignore_ascii_case("http://"))
+    {
+        Some(7)
+    } else {
+        None
+    }
+}
+
+fn url_candidate_end(value: &str, start: usize) -> (usize, Option<usize>) {
+    let mut index = start + scheme_length_at(value, start).expect("candidate starts with a scheme");
+    while index < value.len() {
+        if scheme_length_at(value, index).is_some() {
+            return (index, Some(index));
+        }
+        let character = value[index..]
+            .chars()
+            .next()
+            .expect("index is within the string");
+        if character.is_whitespace() || matches!(character, '"' | '\'' | '<' | '>' | '`') {
+            return (index, None);
+        }
+        index += character.len_utf8();
+    }
+    (value.len(), None)
+}
+
+fn trim_url_punctuation(mut candidate: &str) -> &str {
+    loop {
+        let Some(last) = candidate.chars().next_back() else {
+            return candidate;
+        };
+        let should_trim = matches!(last, ',' | '.' | ';' | ':' | '!' | '?')
+            || match last {
+                ')' => has_unmatched_closer(candidate, '(', ')'),
+                ']' => has_unmatched_closer(candidate, '[', ']'),
+                '}' => has_unmatched_closer(candidate, '{', '}'),
+                _ => false,
+            };
+        if !should_trim {
+            return candidate;
+        }
+        candidate = &candidate[..candidate.len() - last.len_utf8()];
+    }
+}
+
+fn has_unmatched_closer(value: &str, opener: char, closer: char) -> bool {
+    value
+        .chars()
+        .filter(|character| *character == closer)
+        .count()
+        > value
+            .chars()
+            .filter(|character| *character == opener)
+            .count()
 }
 
 fn numbered_step(line: &str) -> Option<&str> {
@@ -303,10 +359,21 @@ mod tests {
     }
 
     #[test]
-    fn extracts_distinct_urls_and_trims_sentence_punctuation() {
+    fn extracts_distinct_urls_with_balanced_delimiters_and_adjacent_schemes() {
         let urls = evidence_urls(
-            ["See http://b.test/x). Then https://example.test/a.".to_string()].into_iter(),
+            ["See (https://en.wikipedia.org/wiki/Function_(mathematics)), https://a.test/x,https://b.test/y;HTTP://C.test/z https://d.test/onehttps://e.test/two [https://wrap.test/x].".to_string()].into_iter(),
         );
-        assert_eq!(urls, ["http://b.test/x", "https://example.test/a"]);
+        assert_eq!(
+            urls,
+            [
+                "https://en.wikipedia.org/wiki/Function_(mathematics)",
+                "https://a.test/x",
+                "https://b.test/y",
+                "HTTP://C.test/z",
+                "https://d.test/one",
+                "https://e.test/two",
+                "https://wrap.test/x",
+            ]
+        );
     }
 }

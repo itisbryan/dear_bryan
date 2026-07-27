@@ -1,6 +1,7 @@
 mod input;
 pub mod model;
 mod normalize;
+mod xlsx_metadata;
 
 use input::{Cell, Table};
 use model::{
@@ -148,7 +149,17 @@ fn is_record_row(
                 Field::Category,
             ]
             .into_iter()
-            .any(has_value);
+            .any(has_value)
+            || (has_value(Field::Title)
+                && [
+                    Field::Preconditions,
+                    Field::Steps,
+                    Field::TestData,
+                    Field::Expected,
+                    Field::Observed,
+                ]
+                .into_iter()
+                .any(has_value));
     }
     fields.iter().enumerate().any(|(index, field)| {
         field.is_some()

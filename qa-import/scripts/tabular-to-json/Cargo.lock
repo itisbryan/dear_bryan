@@ -799,11 +799,13 @@ dependencies = [
  "chrono",
  "clap",
  "csv",
+ "quick-xml",
  "rust_xlsxwriter",
  "serde",
  "serde_json",
  "tempfile",
  "url",
+ "zip 2.4.2",
 ]
 
 [[package]]

@@ -61,11 +61,11 @@ If detection is wrong or intentionally sparse, pass `--header N`. A sheet withou
 - Priority codes such as `P0 - Urgent` become `P0`; known word priorities are canonicalized. Unknown priority is `null`.
 - Common platform/environment aliases are canonicalized; unknown non-empty values remain unchanged.
 - Two or more numbered reproduction lines become `steps`; `steps_raw` always retains the original text. Non-numbered text remains one step.
-- Valid HTTP(S) URLs with a host found anywhere in a row become `evidence_urls`. Scheme matching is case-insensitive, surrounding sentence punctuation is removed, and equivalent duplicates retain their first-seen spelling and order.
+- Valid HTTP(S) URLs with a host found anywhere in a row become `evidence_urls`. Scheme matching is case-insensitive; surrounding or unmatched trailing punctuation is removed without stripping balanced URL parentheses. Adjacent URLs are split at a new scheme, and equivalent duplicates retain their first-seen spelling and order.
 - Category is accepted only when it exactly matches the qa-sweep taxonomy. It is otherwise `null`.
 - Every imported row is `unconfirmed`: spreadsheet history does not establish current behavior.
 
-Without an ID column, any row with a recognized non-empty field is imported. With an ID column, a blank-ID row is still imported when it has an explicit row-level status or taxonomy marker (status, severity, priority, or category); this retains independently classified QA records while avoiding continuation/section rows. Fully empty rows, blank separators, and styled cells without values do not become records. Formula cells use their cached workbook value.
+Without an ID column, any row with a recognized non-empty field is imported. With an ID column, a blank-ID row is still imported when it has an explicit row-level status or taxonomy marker (status, severity, priority, or category), or when it has a title plus substantive QA content (preconditions, steps, test data, expected, or observed). Requiring this combination retains independent unclassified QA records while avoiding comment, continuation, and section rows. Fully empty rows, blank separators, styled cells without values, and intentionally hidden XLSX rows do not become records. Formula cells use their cached workbook value.
 
 ## v1 contract
 

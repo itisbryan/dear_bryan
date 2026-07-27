@@ -74,6 +74,7 @@ fn load_csv(path: &Path) -> Result<Table, String> {
 }
 
 fn load_xlsx(path: &Path, requested_sheet: Option<&str>) -> Result<Vec<Table>, String> {
+    let hidden_rows = crate::xlsx_metadata::hidden_rows(path)?;
     let mut workbook = open_workbook_auto(path)
         .map_err(|error| format!("could not open workbook '{}': {error}", path.display()))?;
     let available = workbook.sheet_names().to_vec();
@@ -97,9 +98,14 @@ fn load_xlsx(path: &Path, requested_sheet: Option<&str>) -> Result<Vec<Table>, S
                 .map_err(|error| format!("could not read sheet '{name}': {error}"))?;
             let (start_row, start_column) = range.start().unwrap_or((0, 0));
             let width = range.width();
+            let hidden = hidden_rows.get(&name);
             let rows = range
                 .rows()
                 .enumerate()
+                .filter(|(index, _)| {
+                    let number = start_row as usize + index + 1;
+                    hidden.is_none_or(|rows| !rows.contains(&number))
+                })
                 .map(|(index, row)| SourceRow {
                     number: start_row as usize + index + 1,
                     cells: row.iter().map(cell_from_excel).collect(),
