@@ -11,6 +11,7 @@ A structured exploratory QA pass over a running web app. You drive the app like 
 
 - **A browser/automation toolset** — the ability to navigate to a URL, snapshot the page (DOM/accessibility tree), click and type, read the console, scroll, and take screenshots. In Claude Code this is the Playwright MCP browser tools; in other harnesses it's whatever browser control is available. This skill is written against those *capabilities*, not any one tool's names.
 - **From the user:** a **target URL**, a **scope** (which areas/flows, or "full site"), and optionally an **output dir** (default `./qa-sweep-output/`).
+- **Optional prior QA context:** a `qa-import/v1` JSON document produced by [`qa-import`](../qa-import/SKILL.md).
 
 If any is missing, ask once, then proceed with sensible defaults.
 
@@ -37,6 +38,8 @@ Set up `{output_dir}/screenshots/` and sketch a rough map of what to test from t
 - Edge cases: empty states, error pages, 404s, invalid input, back-button, reload mid-flow.
 
 Keep the plan lightweight — a checklist, not a spec. Adapt it as you discover the app.
+
+If prior `qa-import/v1` JSON is provided, load its `source`, `summary`, and `records` before exploring. Use historical Fail rows as candidate regression checks and their source locations/raw fields for traceability. They are still `unconfirmed` until reproduced against this target. Pass rows describe previously observed coverage, not proof that the flow passes now; retest relevant flows. Feature Requested rows are product requests, not confirmed current bugs, and stay out of findings unless current behavior independently violates an explicit expectation. Do not invent a category for `null` imports—classify only after observing the current app.
 
 ### 2. Explore
 
@@ -81,6 +84,7 @@ Offer to turn findings into tracked issues: "Found 7 issues — want me to file 
 
 - **Breadth first, then depth.** One good pass over everything beats an exhaustive audit of the landing page. Note areas that need deeper testing rather than blocking on them.
 - Grounding an issue in an existing ticket? Pull it with **gh-workflow** (its `fetch-issue` subskill) before filing a duplicate.
+- Imported QA JSON is prior context, never evidence by itself. A report finding still needs current reproduction and evidence under **The one rule**.
 
 ## When NOT to use this skill
 

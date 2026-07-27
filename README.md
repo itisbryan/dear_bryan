@@ -14,6 +14,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [design-taste](./design-taste) | Designs intentional UI and refuses templated/AI-default "slop" | `design-taste` |
 | [macos-app-design](./macos-app-design) | Designs native-feeling macOS app GUIs and refuses web-port "slop" | `macos-app-design` |
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
+| [qa-import](./qa-import) | Converts QA CSV/XLSX history into deterministic qa-sweep-compatible JSON | `qa-import` |
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
 | [tdd](./tdd) | Test-driven development: red → green → refactor, tests before code | `tdd` |
 | [rails-work](./rails-work) | How I work with Rails — a growing subskill collection (starts with `use-rv`) | `rails-work` |
@@ -96,6 +97,10 @@ dear_bryan/
 │   ├── SKILL.md
 │   ├── references/severity.md
 │   └── templates/report.md
+├── qa-import/
+│   ├── SKILL.md
+│   ├── references/schema-v1.json
+│   └── scripts/tabular-to-json/{Cargo.toml,Cargo.lock,src,tests}
 ├── repo-study/
 │   ├── SKILL.md
 │   ├── references/{general-study,mining-history}.md
