@@ -23,6 +23,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [parabol](./parabol) | Draft my daily standup from git activity + notes + dictation, then submit to Parabol on my OK (draft-then-confirm, never auto-posts). Harness-agnostic; optional launchd + ntfy automation | `parabol` |
 | [momentum](./momentum) | Overwhelmed by an idea's scope? Shrinks it to one shippable slice + one next action, parks the rest. Ships small, beats burnout | `momentum` |
 | [paperwork](./paperwork) | Create polished HTML, PDF, and PNG documents from structured `spec.json`; agents consume deterministic `--json` production results | `paperwork` |
+| [herdr-orchestration](./herdr-orchestration) | Fan work out across Herdr panes, worktrees, and agents — split, prompt, wait on lifecycle states, collect, clean up | `herdr` |
 
 ## Install
 
@@ -105,6 +106,7 @@ dear_bryan/
 │   ├── SKILL.md
 │   ├── references/{general-study,mining-history}.md
 │   └── templates/learnings.md
+├── herdr-orchestration/SKILL.md   ← stub: defers to `herdr --skill` for commands
 ├── brainstorm/SKILL.md
 ├── debug/SKILL.md
 ├── tdd/SKILL.md
