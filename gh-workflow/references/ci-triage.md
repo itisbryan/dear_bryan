@@ -32,27 +32,41 @@ gh run watch <run-id> --exit-status   # same, explicit non-zero on failure — g
 
 Get the `<run-id>` from `gh run list`, or `gh run list --json databaseId -q '.[0].databaseId'` for the latest.
 
-## 3. Diagnose a failure — go straight to the failing logs
+## 3. Diagnose a failure — grep the failure output first
 
-Don't dump the whole log. Pull only what failed:
+Avoid dumping or reading the whole log. `grep` is linear and normally cheap; fetching and decompressing the Actions log is usually the expensive part. Identify the failed job, fetch only failed-step output, and search that output for likely root-cause lines:
+
 
 ```bash
-gh run view <run-id>                  # summary: which jobs/steps failed (✗ marks them)
-gh run view <run-id> --log-failed     # logs of ONLY the failed steps — start here
-gh run view <run-id> --job <job-id> --log   # full log of one job when --log-failed isn't enough
+gh run view <run-id> --json jobs \
+  --jq '.jobs[] | select(.conclusion == "failure") | "\(.databaseId)\t\(.name)"'
+
+gh run view <run-id> --log-failed \
+  | grep -iEn -m 20 -B3 -A6 \
+      'error|fatal|exception|traceback|assert(ion)?|failed|failure|timed out|exit code|command not found|no such file|permission denied' \
+  | sed -n '1,160p'
+
 ```
 
-`--log-failed` is the workhorse: it skips every green step and shows just the error output. Read it, find the actual error line (assertion, compiler error, missing dep, exit code), and trace to the cause — the failing step names the command; the error above the `Process completed with exit code N` line is what broke.
+The first command identifies the failing job IDs. The second command surfaces matching lines with nearby context and caps the displayed result. Start with this filtered output; do not read unfiltered logs.
 
-> Large logs: don't read the raw dump into context. Pipe to a search — `gh run view <run-id> --log-failed | grep -iE "error|fail|exception" -A3` — or process it, and surface only the derived cause.
+If the failure-only output does not identify the cause, target the specific job and keep the full log behind the same filter:
+
+```bash
+gh run view <run-id> --job <job-id> --log \
+  | grep -iEn -m 20 -B3 -A6 \
+      'error|fatal|exception|traceback|assert(ion)?|failed|failure|timed out|exit code|command not found|no such file|permission denied' \
+  | sed -n '1,200p'
+```
+
+Read a narrow surrounding range only after a match points to a relevant step. The failing step names the command; the error above the `Process completed with exit code N` line is usually the root cause.
 
 ## 4. Reproduce locally
 
-The failing step is a shell command in the workflow. Run that exact command locally to reproduce, rather than guessing from the log:
+The failing step is a shell command in the workflow. Extract that command from the filtered failure output and run it locally to reproduce, rather than guessing from the log:
 
-```bash
-gh run view <run-id> --log-failed        # note the command the failed step ran
-# ...then run that command in your checkout
+```text
+filtered failure output → exact failing command → local reproduction
 ```
 
 For a PR that's red, `gh pr checkout <ref>` first so you're on the same code.

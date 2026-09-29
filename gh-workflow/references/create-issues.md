@@ -35,6 +35,19 @@ A clear, scoped list of what needs to happen:
 - Any Slack threads, screenshots, or logs that provide additional context.
 ```
 
+## Title convention
+
+Apply the `gh-workflow` title convention to every new issue. Use one uppercase type tag, a colon, and a space:
+
+```text
+[TYPE]: concise title content
+```
+
+Choose the tag based on the issue's primary purpose. Use `[FIX]: ...` for corrections, `[FEAT]: ...` for new functionality, and `[CHORE]: ...` for maintenance. See the parent skill's title convention for the complete tag list.
+
+Keep the content concise and specific. Do not duplicate an existing prefix.
+
+
 ## Formatting rules
 
 - Use proper markdown headings (`##`) — never raw `\n` escape sequences.
@@ -135,11 +148,12 @@ Iterate until the user approves.
 Create the issue on the project tracker. Report the issue URL to the user.
 
 ```bash
-gh issue create --title "<title>" --body "<body>"
+gh issue create --title "[TYPE]: <title>" --body "<body>"
+
 ```
 
 For GitHub projects, add labels and assignees as needed:
 
 ```bash
-gh issue create --title "<title>" --body "<body>" --label "<label>" --assignee "<username>"
+gh issue create --title "[TYPE]: <title>" --body "<body>" --label "<label>" --assignee "<username>"
 ```

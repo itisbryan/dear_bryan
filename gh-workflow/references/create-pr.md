@@ -60,13 +60,43 @@ Look for:
 - **Unrelated problems noticed in passing** — e.g. a flaky test in the same file, a missing index noticed while reading a query, inconsistent error handling in adjacent code.
 - **Incomplete work** — e.g. a feature flag still in place, clean-up steps deferred to a follow-up PR.
 
-For each valid concern **not in this PR's scope**, create a standalone issue using the `create-issues` subskill's template (Context, Problem, What to decide/do, References). Do not bloat the PR with unrelated fixes — capture them as issues instead.
+For each valid concern **not in this PR's scope**, create a standalone issue using the `create-issues` subskill's template (Context, Problem, What to decide/do, References). Prefix its title with the appropriate uppercase type tag, such as `[FIX]: ...` or `[CHORE]: ...`. Do not bloat the PR with unrelated fixes — capture them as issues instead.
 
 ```bash
-gh issue create --title "<descriptive title>" --body "<issue body>" --label "<label>"
+gh issue create --title "[TYPE]: <descriptive title>" --body "<issue body>" --label "<label>"
 ```
 
+
 Reference the newly created issue numbers — they will be listed in the PR's Notes section.
+
+### Title convention
+
+Apply the `gh-workflow` title convention to the PR and any follow-up issue created from the diff review. Use one uppercase type tag, a colon, and a space:
+
+```text
+[TYPE]: concise title content
+```
+
+Choose the tag based on the primary purpose of the change. Use `[FIX]: ...` for corrections, `[FEAT]: ...` for new functionality, and `[CHORE]: ...` for maintenance. See the parent skill's title convention for the complete tag list.
+
+Keep the content concise and specific. Do not duplicate an existing prefix.
+
+### PR label convention
+
+Apply a label derived from the title prefix when creating the PR:
+
+1. Normalize the prefix to a lowercase canonical label (`[FIX]` → `fix`, `[FEAT]` → `feat`).
+2. Inspect repository labels with `gh label list --json name --limit 100` and reuse the exact canonical label when it exists.
+3. Reuse an established semantic equivalent when present (`bug` for `[FIX]`, `enhancement` for `[FEAT]`, or `documentation` for `[DOCS]`) instead of creating a duplicate taxonomy.
+4. If no matching label exists, create the lowercase canonical label for the current PR type and report the new label:
+
+```bash
+gh label create "<type>" --description "Change type label"
+```
+
+Pass the resolved label to `gh pr create` with `--label`. Apply only the label matching the primary title prefix unless the repository's existing workflow requires additional labels.
+
+
 
 ### 5. Generate PR description
 
@@ -148,13 +178,15 @@ Brings the picking batches list page up to the order_deliveries pattern and adds
 
 ```bash
 git log origin/main..HEAD --oneline
-gh pr create --base main --title "<title>" --body "<description>"
+gh pr create --base main --title "[TYPE]: <title>" --label "<type-label>" --body "<description>"
+
+
 ```
 
 Use `--web` to open in browser if requested:
 
 ```bash
-gh pr create --base main --title "<title>" --body "<description>" --web
+gh pr create --base main --title "[TYPE]: <title>" --label "<type-label>" --body "<description>" --web
 ```
 
 ### 8. Confirm

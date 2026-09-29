@@ -11,6 +11,36 @@ How I work with GitHub issues and pull requests through the `gh` CLI. This skill
 
 GitHub CLI (`gh`) installed and authenticated (`gh auth status`). Run inside the target repository (or pass `--repo owner/repo`).
 
+## Title convention
+
+Prefix every newly created issue and pull request title with an uppercase type tag:
+
+```text
+[TYPE]: concise title content
+```
+
+Example: `[FIX]: {{content}}`.
+
+Choose the tag that best describes the change:
+
+| Tag | Use for |
+|---|---|
+| `[FIX]` | Bug fixes or corrections |
+| `[FEAT]` | New user-facing functionality |
+| `[CHORE]` | Maintenance, tooling, or dependency work |
+| `[CI]` | Continuous integration or deployment changes |
+| `[BUILD]` | Build system or packaging changes |
+| `[REVERT]` | Reverting a previous change |
+| `[STYLE]` | Formatting or non-functional style changes |
+| `[DOCS]` | Documentation-only changes |
+| `[TEST]` | Test-only changes |
+| `[PERF]` | Performance improvements |
+
+When creating a pull request, apply the matching repository label derived from the type tag; follow the label-resolution rules in `references/create-pr.md`.
+
+Keep the content concise and specific. Do not duplicate the prefix when a title already has one. Preserve existing titles when only viewing, triaging, or reviewing GitHub work.
+
+
 ## How to use
 
 Match the request to the table below and load that subskill's file. Follow its guidance fully — a subskill is part of this skill, not a separate one, so don't announce a skill switch, just apply it.
@@ -31,3 +61,5 @@ Match the request to the table below and load that subskill's file. Follow its g
 
 - Load only when its trigger fires — progressive disclosure keeps the base skill small.
 - The subskills compose: `create-pr` files follow-ups with `create-issues`; `create-issues` can pull an existing ticket with `fetch-issue`. When a flow spans two, load both.
+
+- Apply the title convention to every newly created issue or pull request, including follow-up issues filed during PR creation.
