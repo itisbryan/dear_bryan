@@ -15,7 +15,7 @@ When working in a Rails project, check the table below and load the subskill who
 
 | Trigger | Load | What it covers |
 |---|---|---|
-| Anything about the Ruby version, installing Ruby/gems, `rbenv`/`rvm`/`chruby`, running app commands, `bundle install` | [`references/use-rv.md`](./references/use-rv.md) | Use **rv** (spinel-coop/rv) for Ruby version & gem management instead of rbenv/ruby-build/rvm. Setup, command cheat-sheet, and the rbenv→rv mapping. |
+| Anything about the Ruby version, installing Ruby/gems, `rbenv`/`rvm`/`chruby`, running app commands, `bundle install` | [`references/use-rv.md`](./references/use-rv.md) | Using **rv** (spinel-coop/rv) for Ruby version & gem management when appropriate; respect the project's existing toolchain and verify software provenance. Setup, command cheat-sheet, and the rbenv→rv mapping. |
 
 _More subskills to come (conventions, testing, deploy, …). Add them as rows here._
 

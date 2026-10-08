@@ -29,12 +29,19 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 ## Install
 
 ```bash
-# install every skill from the repo into your global skills dir
-npx skills add itisbryan/dear_bryan -s '*' -g -y
+# install every skill globally for Codex and Claude Code
+npx skills add itisbryan/dear_bryan -s '*' -a codex claude-code -g -y
 
-# or clone and point your harness at this directory
-git clone https://github.com/itisbryan/dear_bryan.git
+# install this checkout's modern-mobile-app skill globally for those agents
+npx skills add ./modern-mobile-app -s modern-mobile-app -a codex claude-code -g -y --copy
+
+# PromptScript only supports project-level skills; run from the target project
+npx skills add /path/to/dear_bryan/modern-mobile-app -s modern-mobile-app -a promptscript -y --copy
 ```
+
+Specify global-install agents explicitly: the installer otherwise includes PromptScript in its automatic targets and reports an unsupported global install even when the skill installs for other agents.
+
+Alternatively, clone the repository and point your harness at its skill directories.
 
 In pi, skills in `.agents/skills/` are auto-discovered and register as `/skill:<name>`:
 

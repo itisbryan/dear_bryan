@@ -79,7 +79,8 @@ echo "## HTTP headers"
 curl -sS -I --max-time 15 "$TARGET" 2>&1 || echo "(headers failed)"
 
 echo; echo "## Tech fingerprint (whatweb)"
-if command -v whatweb >/dev/null; then whatweb --max-threads 1 -a 1 "$TARGET" 2>&1 || echo "(whatweb failed)"
+# WhatWeb follows redirects by default; a redirect could leave the approved scope.
+if command -v whatweb >/dev/null; then whatweb --follow-redirect=never --max-threads 1 -a 1 "$TARGET" 2>&1 || echo "(whatweb failed)"
 else echo "(whatweb not installed — skip)"; fi
 
 echo; echo "## Open ports (nmap, rate-limited, top 100)"

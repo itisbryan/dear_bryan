@@ -59,7 +59,7 @@ Skip if the target is a black box.
 
 In-scope, non-mutating requests to map the attack surface. Use `scripts/recon-scan.sh <host>` (rate-limited nmap + whatweb + header/TLS check, scope-gated) or run the pieces manually:
 
-- Tech stack & headers: `whatweb`, `curl -sI`, check for missing security headers.
+- Tech stack & headers: `whatweb --follow-redirect=never`, `curl -sI` (without `-L`); inspect any redirect destination against scope before making another request, then check for missing security headers.
 - Surface: crawl links/forms, enumerate endpoints, find `robots.txt`/`sitemap.xml`, JS-referenced APIs.
 - Auth model: cookies, JWTs (decode header/payload — never log the signature in chat), CSRF tokens, CORS.
 
