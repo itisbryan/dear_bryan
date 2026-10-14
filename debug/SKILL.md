@@ -57,7 +57,7 @@ Complete each before the next. If a later phase disproves your understanding, dr
 - Write the **minimal fix at the root**, not a patch at the symptom. If Phase 2 found siblings, fix them in the same shared place.
 - **The loop goes green.** The red repro from Phase 1 now passes — that's the proof the fix works.
 - **Keep the repro as a regression test** so the bug can't come back silently.
-- **Run the full suite** — the fix must not turn anything else red. A fix that trades one bug for another isn't done.
+- **Run the focused repro and relevant impacted checks.** Unless the repository has a validated impact-selection policy (see `test-strategy optimize`), run its full suite before declaring the fix complete. Unknown/shared impact still needs broad coverage; keep periodic and release full-suite runs even with validated lanes.
 - State the root cause in one sentence when you report — if you can't, you fixed a symptom.
 
 ## Red flags — STOP and return to Phase 1
@@ -70,6 +70,7 @@ Any of these means you've left the process:
 - Second (or third) fix attempt because the last one didn't work.
 - "It's probably X" without a loop that can prove it.
 - Fixing only the path in the report while known siblings stay untouched.
+- Skipping, commenting out, or weakening a failing test merely to make CI green; diagnose it first and request explicit approval before any temporary disablement.
 
 ## When NOT to use this skill
 

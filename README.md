@@ -19,6 +19,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [qa-import](./qa-import) | Converts QA CSV/XLSX history into deterministic qa-sweep-compatible JSON | `qa-import` |
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
 | [tdd](./tdd) | Test-driven development: red → green → refactor, tests before code | `tdd` |
+| [test-strategy](./test-strategy) | Creates meaningful coverage, audits weak tests, and optimizes CI with measured, safe lanes | `test-strategy create`, `audit`, `optimize [--ultra]` |
 | [rails-work](./rails-work) | How I work with Rails — a growing subskill collection (starts with `use-rv`) | `rails-work` |
 | [repo-study](./repo-study) | Learn from a public repo: trace how they solve it in real code, write an evidence-cited learnings doc | `repo-study` |
 | [redteam](./redteam) | Authorized web pentest: recon → analysis → proof-based exploitation → report. "No exploit, no report", hard authorization/scope guardrails | `redteam` |

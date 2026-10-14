@@ -50,7 +50,7 @@ Passes immediately? You're testing behavior that already exists — fix the test
 
 Write the simplest thing that makes the test pass. Nothing more — no extra features, no logging, no "while I'm here" improvements to nearby code.
 
-**Cheating is not just allowed in GREEN, it's encouraged:** hardcode the return, copy-paste, duplicate, skip edge cases. The next RED test will force the generalization. Getting to green fast keeps the loop tight; elegance is the refactor step's job.
+Make the failing **behavioral** test pass with the smallest production change. Temporary hardcoding or duplication is acceptable only while the next meaningful case would expose it; never call a green tautology, mock echo, or implementation-mirroring assertion evidence of correctness. Refactor before declaring the behavior done.
 
 ### REFACTOR — clean up with the tests green
 
@@ -61,8 +61,9 @@ Now improve the code — remove the duplication, extract, rename, generalize the
 - [ ] The test was written before the code.
 - [ ] You watched it fail, for the right reason.
 - [ ] The code is the minimum that passes — nothing speculative.
-- [ ] All tests (not just the new one) are green.
+- [ ] The focused test and required impacted checks are green; without a validated impact-selection policy, run the full suite. Do not hide or skip other known failures.
 - [ ] One behavior per test; names describe behavior.
+- [ ] Each new test detects a plausible consumer-visible regression not already caught by an existing test; use `test-strategy create` when coverage value is uncertain.
 
 ## Red flags — STOP and start over
 
