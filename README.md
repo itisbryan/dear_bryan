@@ -15,6 +15,7 @@ Built to the [Agent Skills](https://agentskills.io/specification) standard — w
 | [macos-app-design](./macos-app-design) | Designs native-feeling macOS app GUIs and refuses web-port "slop" | `macos-app-design` |
 | [modern-mobile-app](./modern-mobile-app) | Designs modern mobile app engagement from 500+ studied apps — mechanics that work + the 3-stage reward ceremony; refuses PBL theater, streak fear, and decoration | `modern-mobile-app` |
 | [qa-sweep](./qa-sweep) | Exploratory QA of a running web app → severity-ranked report, files issues | `qa-sweep` |
+| [browser-lifecycle](./browser-lifecycle) | Keeps browser automation owner-scoped: reuse tabs, close owned resources, avoid killing shared Chrome processes | Browser automation, Playwright, QA |
 | [qa-import](./qa-import) | Converts QA CSV/XLSX history into deterministic qa-sweep-compatible JSON | `qa-import` |
 | [debug](./debug) | Root-cause debugging: reproduce with a red/green loop, fix the cause not the symptom | `debug` |
 | [tdd](./tdd) | Test-driven development: red → green → refactor, tests before code | `tdd` |
